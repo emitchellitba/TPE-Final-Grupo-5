@@ -83,23 +83,20 @@ int dateCompare(struct tm d1, struct tm d2){
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
     int cmp;
-    if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) < 0){
+    if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
         tRide * new = malloc(sizeof(tRide));                    //FALTARIA CHEQUEAR NULL
         new->start_date = start_date;
         new->end_date = end_date;
         new->next = ride;
         return new;
     }
-    if(cmp > 0)
-        addRideRec(ride->next, start_date, end_date);
+    addRideRec(ride->next, start_date, end_date);
     return ride;
 }
 
 
-// Queda muy larga. Podriamos modularizar? Quizas no tiene sentido igual pq no lo volveriamos a usar
-int addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, char isMember){
-                                                    //FALTARIA CHEQUEAR PARAMETROS (invalido => return -1) (fechas, is Member maybe)
-                                                    //FALTARIA CONSIDERAR CASO QUE SALGA Y VUELVA AL MISMO LUGAR (o directo en las funciones?)
+void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, char isMember){
+
     tStation station;
     unsigned long i, endIndex;
     int foundStart = 0;
@@ -146,5 +143,4 @@ int addRide(cityADT city, unsigned long startStationId, struct tm start_date, st
         mktime(&start_date);
         city->ridesPerDay[start_date.tm_wday]++;
     }
-    return 0;
 }

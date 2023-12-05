@@ -13,8 +13,7 @@ cityADT newCity(void);
 int addStation(cityADT city, char * name, unsigned long id);
 
 // Agrega un viaje con los datos dados, dentro de la lista de stations en la estacion de inicio
-// -1 en caso de error en los parametros, 0 en cualquier otro caso
-int addRide(cityADT city, unsigned long startStationId, struct tm startDate, struct tm endDate, unsigned long endStationId, char isMember);
+void addRide(cityADT city, unsigned long startStationId, struct tm startDate, struct tm endDate, unsigned long endStationId, char isMember);
 
 
 
