@@ -2,21 +2,23 @@
 
 #define DAYS_OF_WEEK 7
 
+typedef struct destiny {
+    long id;
+    tRide * rides;
+} tDestiny;
 
 typedef struct ride{
     tDate startDate;
     tDate endDate;
-    long endStationId;
-    char isMember;                      // me interesa guardar el isMember en cada una?(solo lo uso al registrar uno nuevo)
     struct ride * next;
 } tRide;
-
 
 typedef struct station{
     char * name;
     long id;
-    tRide * rides;
-    tRide * mostPopular;
+    tDestiny * destinies;
+    long oldestDestiny;
+    tDate oldestDate;
     long memberRides;
     long casualRides;
     struct station * next;
