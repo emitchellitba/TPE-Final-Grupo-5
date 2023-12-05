@@ -44,8 +44,11 @@ int main(int argc, char * argv[]){
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
-    
-    
+    unsigned long stationId;
+    char *name;
+    while (fscanf(stationsCsv, "%ld;%s;%*f;%*f"), stationId, name){
+        addStation(montreal, name, stationId);
+    }
     
     char * lineaActual;
     unsigned long startStationId, endStationId;
@@ -56,6 +59,8 @@ int main(int argc, char * argv[]){
     endDate.tm_min, endDate.tm_sec, endStationId, isMember) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
         addRide(montreal, startStationId, startDate, endDate, endStationId, isMember);
     }
+
+
 
 
 
