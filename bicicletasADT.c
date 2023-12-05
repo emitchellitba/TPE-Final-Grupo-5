@@ -2,28 +2,21 @@
 
 #define DAYS_OF_WEEK 7
 
+
 typedef struct ride{
     tDate startDate;
     tDate endDate;
+    long endStationId;
     char isMember;                      // me interesa guardar el isMember en cada una?(solo lo uso al registrar uno nuevo)
-                                        // Guardo el bikeType aunque no lo use?????? (no lo guarde por ahora) 
     struct ride * next;
 } tRide;
 
 
-typedef struct route{
-    long endStationId;
-    tRide * rides;
-    long rideCount;
-    struct route * next;                                                  
-} tRoute;
-
 typedef struct station{
     char * name;
     long id;
-    double latitude;                   // Guardo la lat y la long aunque no las use??? (las guarde por ahora)
-    double longitude;
-    tRoute * routes;
+    tRide * rides;
+    tRide * mostPopular;
     long memberRides;
     long casualRides;
     struct station * next;
@@ -45,14 +38,11 @@ cityADT newCity(void){
 }
 
 static
-tStation * addStationRec(tStation * station, char * name, long id, double latitude, double longitude, int * flag){
-        	                                                //FALTARIA CHEQUEAR PARAMETROS (invalido => return -1)
+tStation * addStationRec(tStation * station, char * name, long id, int * flag){
     if(station == NULL || station->id > id){
         tStation * new = malloc(sizeof(tStation));         //FALTARIA CHEQUEAR NULL
         new->name = name;
         new->id = id;
-        new->latitude = latitude;
-        new->longitude = longitude;
         new->routes = NULL;
         new->memberRides = new->casualRides = 0;
         new->next = station;
@@ -60,23 +50,19 @@ tStation * addStationRec(tStation * station, char * name, long id, double latitu
         return new;
     }
     if(station->id < id)
-        station->next = addStationRec(station->next, name, id, latitude, longitude, flag);
+        station->next = addStationRec(station->next, name, id, flag);
     return station;
 }
 
-int addStation(cityADT city, char * name, long id, double latitude, double longitude){
+int addStation(cityADT city, char * name, long id){
+        	                                                //FALTARIA CHEQUEAR PARAMETROS (invalido => return -1)
     int flag = 0;
-    city->stations = addStationRec(city->stations, name, id, latitude, longitude, &flag);
+    city->stations = addStationRec(city->stations, name, id, &flag);
     city->stationCount += flag;
     return flag;
 }
 
-static
-tRoute * addRideRec(tRoute * route, tDate startDate, tDate endDate, long endStationId, char isMember, int * flag){
-    if(route->endStationId = endStationId){
-        
-    }   
-}
+
 
 int addRide(cityADT city, long startStationId, tDate startDate, tDate endDate, long endStationId, char isMember){
                                                     //FALTARIA CHEQUEAR PARAMETROS (invalido => return -1)
@@ -101,34 +87,12 @@ int addRide(cityADT city, long startStationId, tDate startDate, tDate endDate, l
         return -1;                      // el start id o el end id no existen => error!!
 
     int flag = 0;
-    station->routes = addRideRec(station->routes, startDate, endDate, endStationId, isMember, &flag);
+    station->rides = addRideRec(station->rides, startDate, endDate, endStationId, isMember, &flag);
 
-    
-    tRoute auxRoute = station->routes;
-    
-    if(auxRoute->endStationId = endStationId){
-
-    }
 
         
 
 }
-
-typedef struct ride{
-    tDate startDate;
-    tDate endDate;
-    char isMember;                      // me interesa guardar el isMember en cada una?(solo lo uso al registrar uno nuevo)
-                                        // Guardo el bikeType aunque no lo use?????? (no lo guarde por ahora)
-    struct ride * next;
-} tRide;
-
-
-typedef struct route{
-    long endStationId;
-    tRide * rides;
-    long rideCount;
-    struct route * next;                                                  
-} tRoute;
 
 
 
