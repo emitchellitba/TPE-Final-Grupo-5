@@ -46,15 +46,15 @@ int main(int argc, char * argv[]){
 
     unsigned long stationId;
     char *name;
-    while (fscanf(stationsCsv, "%ld;%s;%*f;%*f"), &stationId, &name){
+    while (fscanf(stationsCsv, "%ld;%s;%*f;%*f"), &stationId, name){
         addStation(montreal, name, stationId);
     }
     
     char * lineaActual;
     unsigned long startStationId, endStationId;
     struct tm startDate, endDate;
-    char isMember;
-    while(fscanf(bikesCsv, "%d-%d-%d %d:%d:%d;%ld;%d-%d-%d %d:%d:%d;%ld;%c", &startDate.tm_year, &startDate.tm_mon, &startDate.tm_mday,
+    int isMember;
+    while(fscanf(bikesCsv, "%d-%d-%d %d:%d:%d;%ld;%d-%d-%d %d:%d:%d;%ld;%d", &startDate.tm_year, &startDate.tm_mon, &startDate.tm_mday,
     &startDate.tm_hour, &startDate.tm_min, &startDate.tm_sec, &startStationId, &endDate.tm_year, &endDate.tm_mon, &endDate.tm_mday, &endDate.tm_hour,
     &endDate.tm_min, &endDate.tm_sec, &endStationId, &isMember) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
         addRide(montreal, startStationId, startDate, endDate, endStationId, isMember);
