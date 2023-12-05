@@ -31,7 +31,11 @@ int main(int argc, char * argv[]){
             startYear = atoi(argv[3]);
             if(argc == 4) endYear = atoi(arg[4]);
     } else{
-        printf("Error! Los parametros son incorrectos \n");
+        printf("Error! Cantidad invalida de parametros \n");
+        return ERROR;
+    }
+    if((int a = checkParams(bikes, stations, startYear, endYear) == 0)){
+        printf("Error! Parametros Invalidos\n");
         return ERROR;
     }
 
@@ -40,8 +44,11 @@ int main(int argc, char * argv[]){
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
-    
-    
+    unsigned long stationId;
+    char *name;
+    while (fscanf(stationsCsv, "%ld;%s;%*f;%*f"), stationId, name){
+        addStation(montreal, name, stationId);
+    }
     
     char * lineaActual;
     unsigned long startStationId, endStationId;
@@ -52,6 +59,8 @@ int main(int argc, char * argv[]){
     endDate.tm_min, endDate.tm_sec, endStationId, isMember) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
         addRide(montreal, startStationId, startDate, endDate, endStationId, isMember);
     }
+
+
 
 
 
