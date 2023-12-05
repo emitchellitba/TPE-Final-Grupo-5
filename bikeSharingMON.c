@@ -31,7 +31,11 @@ int main(int argc, char * argv[]){
             startYear = atoi(argv[3]);
             if(argc == 4) endYear = atoi(arg[4]);
     } else{
-        printf("Error! Los parametros son incorrectos \n");
+        printf("Error! Cantidad invalida de parametros \n");
+        return ERROR;
+    }
+    if((int a = checkParams(bikes, stations, startYear, endYear) == 0)){
+        printf("Error! Parametros Invalidos\n");
         return ERROR;
     }
 
