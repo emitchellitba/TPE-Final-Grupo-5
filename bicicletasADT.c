@@ -2,8 +2,6 @@
 
 #define DAYS_OF_WEEK 7
 
-HOLA CHICOS!!!!!!!!!!!!!
-
 typedef struct ride{
     tDate startDate;
     tDate endDate;
