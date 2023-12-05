@@ -8,7 +8,7 @@ typedef struct ride{
     tDate startDate;
     tDate endDate;
     char isMember;                      // me interesa guardar el isMember en cada una?(solo lo uso al registrar uno nuevo)
-                                        // Guardo el bikeType aunque no lo use?????? (no lo guarde por ahora) 8==D
+                                        // Guardo el bikeType aunque no lo use?????? (no lo guarde por ahora) 
     struct ride * next;
 } tRide;
 
