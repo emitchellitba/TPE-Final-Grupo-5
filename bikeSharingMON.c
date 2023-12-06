@@ -64,7 +64,25 @@ int main(int argc, char * argv[]){
 
 
 
+
+
     fclose(bikesCsv);
     fclose(stationsCsv);
     return 0;
+}
+
+void query1(cityADT city){
+    int cantStations = getStationCount(city);
+    int indexVec[cantStations];
+
+    getIdexByRank(city, indexVec);
+
+    FILE * file = fopen("query1.csv", "w+");
+
+    for (int i = 0; i < cantStations; ++i) {
+        int v[2];
+        ridesByStationIndex(city, indexVec[i], v);
+        char * name = nameByStationIndex(city, indexVec[i]);
+        fprintf(file, "%s;%d;%d;%d\n", name, v[0], v[1], v[0]+v[1]);
+    }
 }
