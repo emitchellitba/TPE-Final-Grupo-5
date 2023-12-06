@@ -13,7 +13,7 @@ cityADT newCity(void);
 int addStation(cityADT city, char * name, size_t id);
 
 // Agrega un viaje con los datos dados, dentro de la lista de stations en la estacion de inicio
-void addRide(cityADT city, unsigned long startStationId, struct tm startDate, struct tm endDate, unsigned long endStationId, int isMember);
+void addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember);
 
 void getIdexByRank(cityADT city, int idexVec[]);
 
@@ -21,7 +21,7 @@ char * nameByStationIndex(cityADT city, int idex);
 
 int getStationCount(cityADT city);
 
-void ridesByStationIndex(cityADT city,int idex, unsigned long rides[2]);
+void ridesByStationIndex(cityADT city,int idex, size_t rides[2]);
 
 void freeCity(cityADT city);
 

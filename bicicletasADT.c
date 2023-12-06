@@ -10,7 +10,7 @@
 
 typedef struct index{
     char * name;
-    unsigned long totalRides;
+    size_t totalRides;
     int index;
     struct index * next;
 }tIndex;
@@ -104,9 +104,9 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 }
 
 
-void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, int isMember){
+void addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
     tStation * station;
-    unsigned long i, endIndex;
+    size_t i, endIndex;
     int foundStart = 0;
     int foundEnd = 0;
 
@@ -173,7 +173,7 @@ void freeCity(cityADT city){
     free(city);
 }
 
-void ridesByStationIndex(cityADT city, int idex, unsigned long rides[2]){
+void ridesByStationIndex(cityADT city, int idex, size_t rides[2]){
     rides[0] = city->stations[idex].memberRides;
     rides[1] = city->stations[idex].casualRides;
 }
