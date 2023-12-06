@@ -39,6 +39,12 @@ typedef struct cityCDT{
 } cityCDT;
 
 
+typedef struct index{
+    char * name;
+    unsigned long totalRides;
+    int index;
+    struct index * next;
+}tIndex;
 
 
 cityADT newCity(void){
@@ -161,6 +167,7 @@ char * nameByStationIndex(cityADT city, int idex){
     return city->stations[idex].name;
 }
 
+static
 tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index){
     if(actual == NULL || actual->totalRides <= totalRides) {
         if(actual != NULL && actual->totalRides == totalRides){
