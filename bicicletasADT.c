@@ -22,25 +22,25 @@ typedef struct ride{
 } tRide;
 
 typedef struct destiny {
-    unsigned long index;
+    size_t index;
     tRide * rides;
 } tDestiny;
 
 typedef struct station{
     char * name;
-    unsigned long id;
+    size_t id;
     tDestiny * destinies;
-    unsigned long destiniesCount;
-    unsigned long oldestDestinyIdx;
+    size_t destiniesCount;
+    size_t oldestDestinyIdx;
     struct tm oldest_date;
-    unsigned long memberRides;
-    unsigned long casualRides;
+    size_t memberRides;
+    size_t casualRides;
 } tStation;
 
 typedef struct cityCDT{
     tStation * stations;
-    unsigned long ridesPerDay[DAYS_OF_WEEK];
-    unsigned long stationCount;
+    size_t ridesPerDay[DAYS_OF_WEEK];
+    size_t stationCount;
 } cityCDT;
 
 
@@ -53,9 +53,9 @@ cityADT newCity(void){
 }
 
 
-int addStation(cityADT city, char * name, unsigned long id){
+int addStation(cityADT city, char * name, size_t id){
     int esta = 0;
-    unsigned long i;
+    size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
         if(city->stations[i].id == id)
             esta = 1;
@@ -187,7 +187,7 @@ char * nameByStationIndex(cityADT city, int idex){
 }
 
 static
-tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index){
+tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index){
     if(actual == NULL || actual->totalRides <= totalRides) {
         if(actual != NULL && actual->totalRides == totalRides){
             if(strcmp(actual->name, name) < 0){
