@@ -17,31 +17,31 @@ typedef struct ride{
 } tRide;
 
 typedef struct destiny {
-    unsigned long index;
+    size_t index;
     tRide * rides;
 } tDestiny;
 
 typedef struct station{
     char * name;
-    unsigned long id;
+    size_t id;
     tDestiny * destinies;
-    unsigned long destiniesCount;
-    unsigned long oldestDestinyIdx;
+    size_t destiniesCount;
+    size_t oldestDestinyIdx;
     struct tm oldest_date;
-    unsigned long memberRides;
-    unsigned long casualRides;
+    size_t memberRides;
+    size_t casualRides;
 } tStation;
 
 typedef struct cityCDT{
     tStation * stations;
-    unsigned long ridesPerDay[DAYS_OF_WEEK];
-    unsigned long stationCount;
+    size_t ridesPerDay[DAYS_OF_WEEK];
+    size_t stationCount;
 } cityCDT;
 
 
 typedef struct index{
     char * name;
-    unsigned long totalRides;
+    size_t totalRides;
     int index;
     struct index * next;
 }tIndex;
@@ -54,9 +54,9 @@ cityADT newCity(void){
 }
 
 
-int addStation(cityADT city, char * name, unsigned long id){
+int addStation(cityADT city, char * name, size_t id){
     int esta = 0;
-    unsigned long i;
+    size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
         if(city->stations[i].id == id)
             esta = 1;
@@ -105,10 +105,10 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 }
 
 
-void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, int isMember){
+void addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
 
     tStation station;
-    unsigned long i, endIndex;
+    size_t i, endIndex;
     int foundStart = 0;
     int foundEnd = 0;
 
@@ -154,7 +154,7 @@ void addRide(cityADT city, unsigned long startStationId, struct tm start_date, s
     }
 }
 
-void ridesByStationIndex(cityADT city,int idex, unsigned long rides[2]){
+void ridesByStationIndex(cityADT city,int idex, size_t rides[2]){
     rides[0] = city->stations[idex].memberRides;
     rides[1] = city->stations[idex].casualRides;
 }
@@ -168,7 +168,7 @@ char * nameByStationIndex(cityADT city, int idex){
 }
 
 static
-tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index){
+tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index){
     if(actual == NULL || actual->totalRides <= totalRides) {
         if(actual != NULL && actual->totalRides == totalRides){
             if(strcmp(actual->name, name) < 0){
