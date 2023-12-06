@@ -8,7 +8,12 @@
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
 
-
+typedef struct index{
+    char * name;
+    unsigned long totalRides;
+    int index;
+    struct index * next;
+}tIndex;
 
 typedef struct ride{
     struct tm start_date;
@@ -39,12 +44,6 @@ typedef struct cityCDT{
 } cityCDT;
 
 
-typedef struct index{
-    char * name;
-    unsigned long totalRides;
-    int index;
-    struct index * next;
-}tIndex;
 
 
 cityADT newCity(void){
@@ -106,15 +105,14 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 
 
 void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, int isMember){
-
-    tStation station;
+    tStation * station;
     unsigned long i, endIndex;
     int foundStart = 0;
     int foundEnd = 0;
 
     for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
         if(city->stations[i].id == startStationId){
-            station = city->stations[i];
+            station = &(city->stations[i]);
             foundStart = 1;
         }
         if(city->stations[i].id == endStationId){
@@ -124,37 +122,58 @@ void addRide(cityADT city, unsigned long startStationId, struct tm start_date, s
     }
     if((foundStart && foundEnd)){
         int foundDestiny = 0;
-        for(i = 0; i < station.destiniesCount && !foundDestiny; i++){
-            if(station.destinies[i].index == endIndex){
-                station.destinies[i].rides = addRideRec(station.destinies[i].rides, start_date, end_date);
+        for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
+            if(station->destinies[i].index == endIndex){
+                station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date);
                 foundDestiny = 1;
             }
         }
         if(!foundDestiny){
             if(i % BLOCK == 0){
-                station.destinies = realloc(station.destinies, (i + BLOCK) * sizeof(tDestiny));
+                station->destinies = realloc(station->destinies, (i + BLOCK) * sizeof(tDestiny));
                 //FALTARIA CHEQUeAR NULL
             }
-            station.destinies[i].index = endIndex;
-            station.destinies[i].rides = addRideRec(NULL, start_date, end_date);
-            station.destiniesCount++;
+            station->destinies[i].index = endIndex;
+            station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
+            station->destiniesCount++;
         }
         
-        if(station.memberRides + station.casualRides == 0 || dateCompare(start_date, station.oldest_date) < 0){
-            station.oldestDestinyIdx = endIndex;
-            station.oldest_date = start_date;
+        if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
+            station->oldestDestinyIdx = endIndex;
+            station->oldest_date = start_date;
         }
 
+        
         if(isMember)
-            station.memberRides++;
+            station->memberRides++;
         else
-            station.casualRides++;
-        
-        
+            station->casualRides++;
+    
+        mktime(&start_date);
+        city->ridesPerDay[start_date.tm_wday]++;
     }
 }
 
-void ridesByStationIndex(cityADT city,int idex, unsigned long rides[2]){
+static
+void freeRides(tRide * ride){
+    if(ride == NULL)
+        return;
+    freeRides(ride->next);
+    free(ride);
+}
+
+void freeCity(cityADT city){
+    for(int i = 0; i < city->stationCount; i++){
+        free(city->stations[i].name);
+        for(int j = 0; j < city->stations[i].destiniesCount; j++)
+            freeRides(city->stations[i].destinies[j].rides);
+        free(city->stations[i].destinies);
+    }
+    free(city->stations);
+    free(city);
+}
+
+void ridesByStationIndex(cityADT city, int idex, unsigned long rides[2]){
     rides[0] = city->stations[idex].memberRides;
     rides[1] = city->stations[idex].casualRides;
 }
@@ -202,6 +221,7 @@ void getIdexByRank(cityADT city, int idexVec[]){
     }
     for (int i = 0; i < city->stationCount; ++i) {
         aux = lista->next;
+        free(lista->name);
         free(lista);
         lista = aux;
     }

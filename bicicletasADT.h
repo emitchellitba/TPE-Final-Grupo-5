@@ -5,13 +5,6 @@
 
 typedef struct cityCDT * cityADT;
 
-typedef struct index{
-    char * name;
-    unsigned long totalRides;
-    int index;
-    struct index * next;
-}tIndex;
-
 
 cityADT newCity(void);
 
@@ -24,13 +17,13 @@ void addRide(cityADT city, unsigned long startStationId, struct tm startDate, st
 
 void getIdexByRank(cityADT city, int idexVec[]);
 
-tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index);
-
 char * nameByStationIndex(cityADT city, int idex);
 
 int getStationCount(cityADT city);
 
 void ridesByStationIndex(cityADT city,int idex, unsigned long rides[2]);
+
+void freeCity(cityADT city);
 
 
 #endif

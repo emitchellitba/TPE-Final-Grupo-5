@@ -95,6 +95,7 @@ int main(int argc, char * argv[]){
 
     query1(montreal);
 
+    freeCity(montreal);
     return 0;
 }
 
