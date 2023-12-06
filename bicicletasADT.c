@@ -6,6 +6,12 @@
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
 
+typedef struct index{
+    char * name;
+    unsigned long totalRides;
+    int index;
+    struct index * next;
+}tIndex;
 
 typedef struct ride{
     struct tm start_date;
@@ -144,3 +150,54 @@ void addRide(cityADT city, unsigned long startStationId, struct tm start_date, s
         city->ridesPerDay[start_date.tm_wday]++;
     }
 }
+
+void ridesByStationIndex(cityADT city,int idex, int rides[2]){
+    rides[0] = city->stations[idex].memberRides;
+    rides[1] = city->stations[idex].casualRides;
+}
+
+int getStationCount(cityADT city){
+    return city->stationCount;
+}
+
+char * nameByStationIndex(cityADT city, int idex){
+    return city->stations[idex].name;
+}
+
+tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index){
+    if(actual == NULL || actual->totalRides <= totalRides) {
+        if(actual->totalRides == totalRides){
+            if(strcmp(actual->totalRides, totalRides) > 0){
+                actual->next = addIndexRec(actual->next, name, totalRides, index);
+                return actual;
+            }
+        }
+        tIndex new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
+        new.name = name;
+        new.totalRides = totalRides;
+        new.index = index;
+        return new;
+    }else{
+        actual->next = addIndexRec(actual->next, name, totalRides, index);
+        return actual;
+    }
+}
+
+void getIdexByRank(cityADT city, int idexVec[]){
+
+    tIndex * lista = NULL;
+    for (int i = 0; i < city->stationCount ; ++i) {
+        lista = addIndexRec(city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
+    }
+    tIndex * aux = lista;
+    for (int i = 0; i < city->stationCount; ++i) {
+        idexVec[i] = aux->index;
+        aux = aux->next;
+    }
+    for (int i = 0; i < city->stationCount; ++i) {
+        aux = lista->next;
+        free(lista);
+        lista = aux;
+    }
+}
+
