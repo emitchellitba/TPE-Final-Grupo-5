@@ -1,7 +1,11 @@
 #include "bicicletasADT.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
+#define MAX_TOKENS 100
 #define PARAM_ERROR -1
+#define MAX_TEXT 50
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
@@ -9,15 +13,20 @@ int checkParams(char* bikes, char*stations, int startYear, int endYear){
     if(startYear != 0 && endYear != 0){
         if(endYear < startYear) return 0;
     }
-    if(strcmp(bikes, "bikesNYC.csv") != 0) return 0;
-    if(strcmp(stations,"stationsNYC.csv") != 0) return 0;
+    if(strcmp(bikes, "biketest.txt") != 0) return 0;
+    if(strcmp(stations,"stationtest.txt") != 0) return 0;
     return 1;
+}
+
+static void
+readDate(char * s, struct tm * date) {
+    sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
 
 int main(int argc, char * argv[]){
 
     int startYear = 0, endYear = 0;
-    char* bikes, stations;
+    char* bikes, *stations;
 
     if(argc < 3 || argc > 5) {
         printf("Cantidad invalida de parametros.\n");
@@ -26,9 +35,9 @@ int main(int argc, char * argv[]){
         bikes = argv[1];
         stations = argv[2];
         if(argc > 3) {
-            startYear = argv[3];
+            startYear = atoi(argv[3]);
             if(argc == 5) {
-                endYear = argv[4];
+                endYear = atoi(argv[4]);
             }
         }
     }
@@ -42,29 +51,43 @@ int main(int argc, char * argv[]){
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
-    char * lineaActual;
-    unsigned long startStationId, endStationId;
-    struct tm startDate, endDate;
-    char * memberState;
+    char aux[MAX_TOKENS];
+    int first = 1;
+    while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
+        char name[MAX_TEXT];
+        unsigned long stationId;
 
-    while(fgets(stationsCsv, "r")) {
-        
+        if(first) {
+            first = 0;
+        } else {
+            strcpy(name, strtok(aux, ";"));
+            for(int i = 0; i < 2; i++)
+                strtok(NULL, ";");                  //ignoramos la longitud y la latitud
+            stationId = atoi(strtok(NULL, "\n"));
+            addStation(nyc, name, stationId);
+        }
     }
     
-    // while(fscanf(bikesCsv, "%d-%d-%d %d:%d:%d;%ld;%d-%d-%d %d:%d:%d;%ld;%*s;%s", &startDate.tm_year, &startDate.tm_mon, &startDate.tm_mday, 
-    // &startDate.tm_hour, &startDate.tm_min, &startDate.tm_sec, &startStationId, &endDate.tm_year, &endDate.tm_mon, &endDate.tm_mday, &endDate.tm_hour,
-    // &endDate.tm_min, &endDate.tm_sec, &endStationId, memberState) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
-    //     addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);
-    // }
-
-    // char * name;
-    // unsigned long stationId;
-
-    // while(fscanf(bikesCsv, "%s;%*f;%*f;%ld", name, &stationId) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
-    //     addStation(nyc, name, stationId);
-    // }
-
     
+    first = 1;
+    while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
+        unsigned long startStationId, endStationId;
+        struct tm startDate, endDate;
+        char memberState[MAX_TEXT];
+
+        if(first) {
+            first = 0;
+        } else {
+            readDate(strtok(aux, ";"), &startDate);
+            startStationId = atoi(strtok(NULL, ";"));
+            readDate(strtok(NULL, ";"), &endDate);
+            endStationId = atoi(strtok(NULL, ";"));
+            strtok(NULL, ";"); //ignoramos rideable
+            strcpy(memberState, strtok(NULL, "\n"));
+            addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);    
+        }
+    }
+
 
     fclose(bikesCsv);
     fclose(stationsCsv);
