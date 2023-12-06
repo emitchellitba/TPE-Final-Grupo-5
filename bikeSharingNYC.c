@@ -13,8 +13,8 @@ int checkParams(char* bikes, char*stations, int startYear, int endYear){
     if(startYear != 0 && endYear != 0){
         if(endYear < startYear) return 0;
     }
-    if(strcmp(bikes, "biketest.txt") != 0) return 0;
-    if(strcmp(stations,"stationtest.txt") != 0) return 0;
+    if(strcmp(bikes, "bikesNYC.csv") != 0) return 0;
+    if(strcmp(stations,"stationsNYC.csv") != 0) return 0;
     return 1;
 }
 
@@ -84,7 +84,7 @@ int main(int argc, char * argv[]){
             endStationId = atoi(strtok(NULL, ";"));
             strtok(NULL, ";"); //ignoramos rideable
             strcpy(memberState, strtok(NULL, "\n"));
-            addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);    
+            addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);
         }
     }
 
