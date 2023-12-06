@@ -1,17 +1,14 @@
 #include "bicicletasADT.h"
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
 
-typedef struct index{
-    char * name;
-    unsigned long totalRides;
-    int index;
-    struct index * next;
-}tIndex;
+
 
 typedef struct ride{
     struct tm start_date;
@@ -63,7 +60,8 @@ int addStation(cityADT city, char * name, unsigned long id){
             city->stations = realloc(city->stations, (i + BLOCK) * sizeof(tStation));
             //FALTARIA CHEQEUAR NULL
         }
-        city->stations[i].name = name;
+        city->stations[i].name = malloc(strlen(name) + 1);
+        strcpy(city->stations[i].name, name);
         city->stations[i].id = id;
         city->stations[i].destinies = NULL;
         city->stations[i].destiniesCount = 0;
@@ -101,7 +99,7 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 }
 
 
-void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, char isMember){
+void addRide(cityADT city, unsigned long startStationId, struct tm start_date, struct tm end_date, unsigned long endStationId, int isMember){
 
     tStation station;
     unsigned long i, endIndex;
@@ -146,12 +144,11 @@ void addRide(cityADT city, unsigned long startStationId, struct tm start_date, s
         else
             station.casualRides++;
         
-        mktime(&start_date);
-        city->ridesPerDay[start_date.tm_wday]++;
+        
     }
 }
 
-void ridesByStationIndex(cityADT city,int idex, int rides[2]){
+void ridesByStationIndex(cityADT city,int idex, unsigned long rides[2]){
     rides[0] = city->stations[idex].memberRides;
     rides[1] = city->stations[idex].casualRides;
 }
@@ -166,16 +163,18 @@ char * nameByStationIndex(cityADT city, int idex){
 
 tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int index){
     if(actual == NULL || actual->totalRides <= totalRides) {
-        if(actual->totalRides == totalRides){
-            if(strcmp(actual->totalRides, totalRides) > 0){
+        if(actual != NULL && actual->totalRides == totalRides){
+            if(strcmp(actual->name, name) < 0){
                 actual->next = addIndexRec(actual->next, name, totalRides, index);
                 return actual;
             }
         }
-        tIndex new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
-        new.name = name;
-        new.totalRides = totalRides;
-        new.index = index;
+        tIndex * new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
+        new->name = malloc(strlen(name) + 1);
+        strcpy(new->name, name);
+        new->totalRides = totalRides;
+        new->index = index;
+        new->next = actual;
         return new;
     }else{
         actual->next = addIndexRec(actual->next, name, totalRides, index);
@@ -186,8 +185,8 @@ tIndex * addIndexRec(tIndex * actual, char * name, unsigned long totalRides, int
 void getIdexByRank(cityADT city, int idexVec[]){
 
     tIndex * lista = NULL;
-    for (int i = 0; i < city->stationCount ; ++i) {
-        lista = addIndexRec(city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
+    for (int i = 0; i < city->stationCount ; i++) {
+        lista = addIndexRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
     }
     tIndex * aux = lista;
     for (int i = 0; i < city->stationCount; ++i) {

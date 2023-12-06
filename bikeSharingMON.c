@@ -1,11 +1,13 @@
+#include "bicicletasADT.h"
 #include <stdio.h>
-#include "bicicletasADT.h"
-#include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
-#include <time.h>
-#include "bicicletasADT.h"
-#define ERROR -1
+#include <stdlib.h>
+
+#define MAX_TOKENS 100
+#define PARAM_ERROR -1
+#define MAX_TEXT 50
+
+void query1(cityADT city);
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
@@ -13,61 +15,86 @@ int checkParams(char* bikes, char*stations, int startYear, int endYear){
     if(startYear != 0 && endYear != 0){
         if(endYear < startYear) return 0;
     }
-    if(strcmp(bikes, "bikesMON.csv") != 0) return 0;
-    if(strcmp(stations,"stationsMON.csv") != 0) return 0;
+    if(strcmp(bikes, "biketest.txt") != 0) return 0;
+    if(strcmp(stations,"stationtest.txt") != 0) return 0;
     return 1;
 }
 
+static void
+readDate(char * s, struct tm * date) {
+    sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
+}
 
 int main(int argc, char * argv[]){
 
     int startYear = 0, endYear = 0;
-    char* bikes, stations;
+    char* bikes, *stations;
 
-    bikes = argv[1];
-    stations = argv[2];
-
-    if(argc == 3 || argc == 4){
+    if(argc < 3 || argc > 5) {
+        printf("Cantidad invalida de parametros.\n");
+        return PARAM_ERROR;
+    } else {
+        bikes = argv[1];
+        stations = argv[2];
+        if(argc > 3) {
             startYear = atoi(argv[3]);
-            if(argc == 4) endYear = atoi(arg[4]);
-    } else{
-        printf("Error! Cantidad invalida de parametros \n");
-        return ERROR;
+            if(argc == 5) {
+                endYear = atoi(argv[4]);
+            }
+        }
     }
-    if((int a = checkParams(bikes, stations, startYear, endYear) == 0)){
-        printf("Error! Parametros Invalidos\n");
-        return ERROR;
-    }
+    /* if(!checkParams(bikes, stations, startYear, endYear)) {
+        printf("Error en los parametros\n");
+        return PARAM_ERROR;
+    } */
 
-    cityADT montreal = newCity();
+   cityADT montreal = newCity();
 
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
-    unsigned long stationId;
-    char *name;
-    while (fscanf(stationsCsv, "%ld;%s;%*f;%*f"), &stationId, name){
-        addStation(montreal, name, stationId);
+    char aux[MAX_TOKENS];
+    int first = 1;
+    
+    while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
+        char name[MAX_TEXT];
+        unsigned long stationId;
+
+        if(first) {
+            first = 0;
+        } else {
+            stationId = atoi(strtok(aux, ";"));
+            strcpy(name, strtok(NULL, ";"));
+            addStation(montreal, name, stationId);
+        }
+         
     }
     
-    char * lineaActual;
-    unsigned long startStationId, endStationId;
-    struct tm startDate, endDate;
-    int isMember;
-    while(fscanf(bikesCsv, "%d-%d-%d %d:%d:%d;%ld;%d-%d-%d %d:%d:%d;%ld;%d", &startDate.tm_year, &startDate.tm_mon, &startDate.tm_mday,
-    &startDate.tm_hour, &startDate.tm_min, &startDate.tm_sec, &startStationId, &endDate.tm_year, &endDate.tm_mon, &endDate.tm_mday, &endDate.tm_hour,
-    &endDate.tm_min, &endDate.tm_sec, &endStationId, &isMember) != EOF){                     //TAMBIEN PUEDE SER DISTINTO DE CERO
-        addRide(montreal, startStationId, startDate, endDate, endStationId, isMember);
+    
+    
+    first = 1;
+    while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
+        unsigned long startStationId, endStationId;
+        struct tm startDate, endDate;
+        int isMember;
+
+        if(first) {
+            first = 0;
+        } else {
+            readDate(strtok(aux, ";"), &startDate);
+            startStationId = atoi(strtok(NULL, ";"));
+            readDate(strtok(NULL, ";"), &endDate);
+            endStationId = atoi(strtok(NULL, ";"));
+            isMember = atoi(strtok(NULL, "\n"));
+            addRide(montreal, startStationId, startDate, endDate, endStationId, isMember);    
+        }
     }
-
-
-
-
-
-
 
     fclose(bikesCsv);
     fclose(stationsCsv);
+
+    query1(montreal);
+
     return 0;
 }
 
@@ -77,12 +104,14 @@ void query1(cityADT city){
 
     getIdexByRank(city, indexVec);
 
-    FILE * file = fopen("query1.csv", "w+");
+    FILE * file;
+    file = fopen("query1.csv", "w+");
 
     for (int i = 0; i < cantStations; ++i) {
-        int v[2];
+        unsigned long v[2];
         ridesByStationIndex(city, indexVec[i], v);
         char * name = nameByStationIndex(city, indexVec[i]);
-        fprintf(file, "%s;%d;%d;%d\n", name, v[0], v[1], v[0]+v[1]);
+        fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
     }
+    fclose(file);
 }
