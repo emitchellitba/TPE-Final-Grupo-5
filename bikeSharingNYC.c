@@ -7,6 +7,8 @@
 #define PARAM_ERROR -1
 #define MAX_TEXT 50
 
+void query1(cityADT city);
+
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
     if(endYear < 0 || startYear < 0) return 0;
@@ -91,5 +93,30 @@ int main(int argc, char * argv[]){
 
     fclose(bikesCsv);
     fclose(stationsCsv);
+
+    query1(nyc);
+
+    freeCity(nyc);
+
     return 0;
+}
+
+void query1(cityADT city){
+    int cantStations = getStationCount(city);
+    int indexVec[cantStations];
+
+    getIdexByRank(city, indexVec);
+
+    FILE * file;
+    file = fopen("query1.csv", "w+");
+
+    fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
+
+    for (int i = 0; i < cantStations; ++i) {
+        unsigned long v[2];
+        ridesByStationIndex(city, indexVec[i], v);
+        char * name = nameByStationIndex(city, indexVec[i]);
+        fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
+    }
+    fclose(file);
 }

@@ -108,6 +108,8 @@ void query1(cityADT city){
     FILE * file;
     file = fopen("query1.csv", "w+");
 
+    fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
+    
     for (int i = 0; i < cantStations; ++i) {
         unsigned long v[2];
         ridesByStationIndex(city, indexVec[i], v);
