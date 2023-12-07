@@ -54,13 +54,13 @@ int main(int argc, char * argv[]){
     char aux[MAX_TOKENS];
     int first = 1;
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
-        char name[MAX_TEXT];
+        char * name;
         unsigned long stationId;
 
         if(first) {
             first = 0;
         } else {
-            strcpy(name, strtok(aux, ";"));
+            name = strtok(aux, ";");
             for(int i = 0; i < 2; i++)
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]){
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
         unsigned long startStationId, endStationId;
         struct tm startDate, endDate;
-        char memberState[MAX_TEXT];
+        char * memberState;
 
         if(first) {
             first = 0;
@@ -83,7 +83,7 @@ int main(int argc, char * argv[]){
             readDate(strtok(NULL, ";"), &endDate);
             endStationId = atoi(strtok(NULL, ";"));
             strtok(NULL, ";"); //ignoramos rideable
-            strcpy(memberState, strtok(NULL, "\n"));
+            memberState = strtok(NULL, "\n");
             addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);
         }
     }
