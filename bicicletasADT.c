@@ -22,7 +22,7 @@ typedef struct ride{
 } tRide;
 
 typedef struct destiny {
-    size_t index;
+    char * name;
     tRide * rides;
 } tDestiny;
 
@@ -108,7 +108,8 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 
 void addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
     tStation * station;
-    size_t i, endIndex;
+    size_t i;
+    char * endName;
     int foundStart = 0;
     int foundEnd = 0;
 
@@ -118,14 +119,14 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             foundStart = 1;
         }
         if(city->stations[i].id == endStationId){
-            endIndex = i;
+            endName = city->stations[i].name;                       
             foundEnd = 1;
         }
     }
     if((foundStart && foundEnd)){
         int foundDestiny = 0;
         for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
-            if(station->destinies[i].index == endIndex){
+            if(strcmp(station->destinies[i].name, endName) == 0){
                 station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date);
                 foundDestiny = 1;
             }
@@ -135,14 +136,15 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
                 station->destinies = realloc(station->destinies, (i + BLOCK) * sizeof(tDestiny));
                 //FALTARIA CHEQUeAR NULL
             }
-            station->destinies[i].index = endIndex;
+            station->destinies[i].name = malloc(strlen(endName) + 1);             //chequear null 
+            strcpy(station->destinies[i].name, endName); 
             station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
             station->destiniesCount++;
         }
         
         if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
-            station->oldestDestinyName = realloc(station->oldestDestinyName, strlen(city->stations[endIndex].name) + 1);
-            strcpy(station->oldestDestinyName, city->stations[endIndex].name);
+            station->oldestDestinyName = realloc(station->oldestDestinyName, strlen(endName) + 1);
+            strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
         }
 
@@ -172,9 +174,10 @@ void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
         free(city->stations[i].name);
         free(city->stations[i].oldestDestinyName);
-        for(int j = 0; j < city->stations[i].destiniesCount; j++)
+        for(int j = 0; j < city->stations[i].destiniesCount; j++){
+            free(city->stations[i].destinies[j].name);
             freeRides(city->stations[i].destinies[j].rides);
-        free(city->stations[i].destinies);
+        }free(city->stations[i].destinies);
     }
     free(city->stations);
     free(city);
