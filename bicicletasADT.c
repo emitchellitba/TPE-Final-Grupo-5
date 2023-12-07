@@ -255,7 +255,7 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
         if(actual != NULL && strcmp(actual->name, name) == 0){
             if(index  > actual->index){
-                actual->next = addIndexRec(actual->next, name, index);
+                actual->next = addIndexAlphRec(actual->next, name, index);
                 return actual;
             }
         }
@@ -266,7 +266,7 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
         new->next = actual;
         return new;
     }else{
-        actual->next = addIndexAlphRec()Rec(actual->next, name, index);
+        actual->next = addIndexAlphRec(actual->next, name, index);
         return actual;
     }
 }
@@ -276,7 +276,7 @@ void getOldest(cityADT city, int index, char * nameStart, char* nameEnd, struct 
     nameStart = city->stations[index].name;
     nameEnd = city->stations[city->stations[index].oldestDestinyIdx].name;
     oldestTime->tm_mday = city->stations[index].oldest_date.tm_mday;
-    oldestTime->tm_mon = city->stations[index].oldest_date->tm_mon;
+    oldestTime->tm_mon = city->stations[index].oldest_date.tm_mon;
     oldestTime->tm_year = city->stations[index].oldest_date.tm_year;
     oldestTime->tm_hour = city->stations[index].oldest_date.tm_hour;
     oldestTime->tm_min = city->stations[index].oldest_date.tm_min;

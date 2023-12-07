@@ -132,7 +132,7 @@ void query2(cityADT city){
         char * nameStart, * nameEnd;
         struct tm oldesTime;
         getOldest(city, indexVec[i], nameStart, nameEnd, &oldesTime);
-        fprinf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldesTime.tm_day, oldesTime.tm_mon, oldesTime.tm_year,
+        fprinf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldesTime.tm_mday, oldesTime.tm_mon, oldesTime.tm_year,
                oldesTime.tm_hour, oldesTime.tm_min);
     }
 
