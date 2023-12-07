@@ -286,3 +286,11 @@ void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, stru
     oldestTime->tm_hour = city->stations[index].oldest_date.tm_hour;
     oldestTime->tm_min = city->stations[index].oldest_date.tm_min;
 }
+
+size_t getStartedRides(cityADT city, int index) {
+    return city->startedRidesPerDay[index];
+}
+
+size_t getEndRides(cityADT city, int index) {
+    return city->endedRidesPerDay[index];
+}
