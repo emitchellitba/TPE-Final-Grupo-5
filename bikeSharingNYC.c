@@ -98,6 +98,8 @@ int main(int argc, char * argv[]){
 
     query1(nyc);
 
+    query3(nyc);
+
     freeCity(nyc);
 
     return 0;

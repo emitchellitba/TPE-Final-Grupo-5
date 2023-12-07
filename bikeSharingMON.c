@@ -95,6 +95,8 @@ int main(int argc, char * argv[]){
 
     query1(montreal);
 
+    query3(montreal);
+
     freeCity(montreal);
     return 0;
 }
@@ -137,5 +139,18 @@ void query2(cityADT city){
     }
 
 
+    fclose(file);
+}
+
+void query3(cityADT city) {
+    FILE * file;
+    file = fopen("query3.csv", "w+");
+
+    char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+    fprintf(file, "weekDay;startedTrips;endedTrips\n");
+    for(int i = 0; i < DAYS_OF_WEEK; i++) {
+        fprintf(file, "%s;%d;%d", weekVec[i], getStartedRides(city, i), getEndedRides(city, i));
+    }
     fclose(file);
 }
