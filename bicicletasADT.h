@@ -33,5 +33,9 @@ void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, stru
 
 void freeCity(cityADT city);
 
+size_t getStartedRides(cityADT city, int index);
+
+size_t getEndRides(cityADT city, int index);
+
 
 #endif
