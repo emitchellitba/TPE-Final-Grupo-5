@@ -177,18 +177,38 @@ void freeCity(cityADT city){
     free(city);
 }
 
-void ridesByStationIndex(cityADT city, int idex, size_t rides[2]){
-    rides[0] = city->stations[idex].memberRides;
-    rides[1] = city->stations[idex].casualRides;
+void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
+    rides[0] = city->stations[index].memberRides;
+    rides[1] = city->stations[index].casualRides;
 }
 
 int getStationCount(cityADT city){
     return city->stationCount;
 }
 
-char * nameByStationIndex(cityADT city, int idex){
-    return city->stations[idex].name;
+char * nameByStationIndex(cityADT city, int index){
+    return city->stations[index].name;
 }
+
+static
+void listToArray(tIndex * list, size_t size, int indexVec[]){
+    for (int i = 0; i < size; ++i) {
+        indexVec[i] = list->index;
+        list = list->next;
+    }
+}
+
+static
+void freeList(tIndex * lista){
+    tIndex * aux;
+    while(lista != NULL) {
+        aux = lista->next;
+        free(lista->name);
+        free(lista);
+        lista = aux;
+    }
+}
+
 
 static
 tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index){
@@ -212,42 +232,14 @@ tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index)
     }
 }
 
-void getIdexByRank(cityADT city, int idexVec[]){
+void getIndexByRank(cityADT city, int indexVec[]){
 
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
         lista = addIndexRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
     }
-    tIndex * aux = lista;
-    for (int i = 0; i < city->stationCount; ++i) {
-        idexVec[i] = aux->index;
-        aux = aux->next;
-    }
-    for (int i = 0; i < city->stationCount; ++i) {
-        aux = lista->next;
-        free(lista->name);
-        free(lista);
-        lista = aux;
-    }
-}
-
-void getIdexByAlph(cityADT city, int idexVec[]){
-
-    tIndex * lista = NULL;
-    for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexAlphRec(lista, city->stations[i].name, i);
-    }
-    tIndex * aux = lista;
-    for (int i = 0; i < city->stationCount; ++i) {
-        idexVec[i] = aux->index;
-        aux = aux->next;
-    }
-    for (int i = 0; i < city->stationCount; ++i) {
-        aux = lista->next;
-        free(lista->name);
-        free(lista);
-        lista = aux;
-    }
+    listToArray(lista, city->stationCount, indexVec);
+    freeList(lista);
 }
 
 static
@@ -269,6 +261,16 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
         actual->next = addIndexAlphRec(actual->next, name, index);
         return actual;
     }
+}
+
+void getIndexByAlph(cityADT city, int indexVec[]){
+
+    tIndex * lista = NULL;
+    for (int i = 0; i < city->stationCount ; i++) {
+        lista = addIndexAlphRec(lista, city->stations[i].name, i);
+    }
+    listToArray(lista, city->stationCount, indexVec);
+    freeList(lista);
 }
 
 void getOldest(cityADT city, int index, char * nameStart, char* nameEnd, struct tm * oldestTime){

@@ -103,7 +103,7 @@ void query1(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
-    getIdexByRank(city, indexVec);
+    getIndexByRank(city, indexVec);
 
     FILE * file;
     file = fopen("query1.csv", "w+");
@@ -124,16 +124,16 @@ void query2(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
-    getIdexByAlph(city, indexVec);
+    getIndexByAlph(city, indexVec);
 
     FILE * file = fopen("query2.csv", "w");
 
     for (int i = 0; i < cantStations; ++i) {
         char * nameStart, * nameEnd;
-        struct tm oldesTime;
-        getOldest(city, indexVec[i], nameStart, nameEnd, &oldesTime);
-        fprinf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldesTime.tm_mday, oldesTime.tm_mon, oldesTime.tm_year,
-               oldesTime.tm_hour, oldesTime.tm_min);
+        struct tm oldestTime;
+        getOldest(city, indexVec[i], nameStart, nameEnd, &oldestTime);
+        fprintf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
+               oldestTime.tm_hour, oldestTime.tm_min);
     }
 
 

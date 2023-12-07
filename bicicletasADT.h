@@ -23,6 +23,10 @@ int getStationCount(cityADT city);
 
 void ridesByStationIndex(cityADT city,int idex, size_t rides[2]);
 
+void getIndexByRank(cityADT city, int indexVec[]);
+
+void getIndexByAlph(cityADT city, int indexVec[]);
+
 void freeCity(cityADT city);
 
 
