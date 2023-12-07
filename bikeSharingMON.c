@@ -130,14 +130,17 @@ void query2(cityADT city){
 
     getIndexByAlph(city, indexVec);
 
-    FILE * file = fopen("query2.csv", "w");
+    FILE * file = fopen("query2.csv", "w+");
 
+    fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
     for (int i = 0; i < cantStations; ++i) {
         char * nameStart, * nameEnd;
         struct tm oldestTime;
-        getOldest(city, indexVec[i], nameStart, nameEnd, &oldestTime);
-        fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
+        getOldest(city, indexVec[i], &nameStart, &nameEnd, &oldestTime);
+        if(nameEnd != NULL){
+            fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
                oldestTime.tm_hour, oldestTime.tm_min);
+        }
     }
 
 
