@@ -297,3 +297,38 @@ size_t getStartedRides(cityADT city, int index) {
 size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
+
+void getMostPopular(tStation station, int * rides, char ** endName, int startYear, int endYear){
+
+    size_t maxRides;
+    char * maxName;
+
+
+
+    for (int i = 0; i < station.destiniesCount; ++i) {
+        size_t rides =  getRidesBetween(station.destinies[i], startYear, endYear);
+
+        if(rides > maxRides) {
+            maxRides = rides;
+            
+        }else if(rides == maxRides){
+            if(strcmp(maxName, station.destinies.name) < 0)
+                maxRides = rides;
+        }
+    }
+}
+
+size_t getRidesBetween(tDestiny destino, size_t startYear, size_t endYear){
+
+
+
+    for (int i = 0; i < ; ++i) {
+        if(startYear != 0 || destino.rides->start_date.tm_year >= startYear)
+            if(endYear != 0 || destino.rides->end_date <= endYear)
+
+    }
+
+
+
+}
+
