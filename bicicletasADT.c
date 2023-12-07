@@ -313,7 +313,7 @@ void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char *
         }else if(rides == maxRides){
             if(strcmp(maxName, station.destinies[i].name) < 0){
                 maxRides = rides;
-                maxName = station.destinies[i].name
+                maxName = station.destinies[i].name;
             }
         }
     }
