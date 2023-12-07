@@ -7,6 +7,8 @@
 #define PARAM_ERROR -1
 #define MAX_TEXT 50
 
+void query1(cityADT city);
+
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
     if(endYear < 0 || startYear < 0) return 0;
@@ -54,13 +56,13 @@ int main(int argc, char * argv[]){
     char aux[MAX_TOKENS];
     int first = 1;
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
-        char name[MAX_TEXT];
+        char * name;
         unsigned long stationId;
 
         if(first) {
             first = 0;
         } else {
-            strcpy(name, strtok(aux, ";"));
+            name = strtok(aux, ";");
             for(int i = 0; i < 2; i++)
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
@@ -73,7 +75,7 @@ int main(int argc, char * argv[]){
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
         unsigned long startStationId, endStationId;
         struct tm startDate, endDate;
-        char memberState[MAX_TEXT];
+        char * memberState;
 
         if(first) {
             first = 0;
@@ -83,7 +85,7 @@ int main(int argc, char * argv[]){
             readDate(strtok(NULL, ";"), &endDate);
             endStationId = atoi(strtok(NULL, ";"));
             strtok(NULL, ";"); //ignoramos rideable
-            strcpy(memberState, strtok(NULL, "\n"));
+            memberState = strtok(NULL, "\n");
             addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);
         }
     }
@@ -91,5 +93,30 @@ int main(int argc, char * argv[]){
 
     fclose(bikesCsv);
     fclose(stationsCsv);
+
+    query1(nyc);
+
+    freeCity(nyc);
+
     return 0;
+}
+
+void query1(cityADT city){
+    int cantStations = getStationCount(city);
+    int indexVec[cantStations];
+
+    getIdexByRank(city, indexVec);
+
+    FILE * file;
+    file = fopen("query1.csv", "w+");
+
+    fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
+
+    for (int i = 0; i < cantStations; ++i) {
+        unsigned long v[2];
+        ridesByStationIndex(city, indexVec[i], v);
+        char * name = nameByStationIndex(city, indexVec[i]);
+        fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
+    }
+    fclose(file);
 }

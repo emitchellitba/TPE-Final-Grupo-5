@@ -57,14 +57,14 @@ int main(int argc, char * argv[]){
     int first = 1;
     
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
-        char name[MAX_TEXT];
+        char * name;
         unsigned long stationId;
 
         if(first) {
             first = 0;
         } else {
             stationId = atoi(strtok(aux, ";"));
-            strcpy(name, strtok(NULL, ";"));
+            name = strtok(NULL, ";");
             addStation(montreal, name, stationId);
         }
          
@@ -108,6 +108,8 @@ void query1(cityADT city){
     FILE * file;
     file = fopen("query1.csv", "w+");
 
+    fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
+    
     for (int i = 0; i < cantStations; ++i) {
         unsigned long v[2];
         ridesByStationIndex(city, indexVec[i], v);
