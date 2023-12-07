@@ -29,6 +29,8 @@ void getIndexByRank(cityADT city, int indexVec[]);
 
 void getIndexByAlph(cityADT city, int indexVec[]);
 
+void getOldest(cityADT city, int index, char * nameStart, char* nameEnd, struct tm * oldestTime);
+
 void freeCity(cityADT city);
 
 

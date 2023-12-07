@@ -8,6 +8,8 @@
 #define MAX_TEXT 50
 
 void query1(cityADT city);
+void query2(cityADT city);
+void query3(cityADT city);
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
@@ -94,7 +96,7 @@ int main(int argc, char * argv[]){
     fclose(stationsCsv);
 
     query1(montreal);
-
+    query2(montreal);
     query3(montreal);
 
     freeCity(montreal);
@@ -134,7 +136,7 @@ void query2(cityADT city){
         char * nameStart, * nameEnd;
         struct tm oldestTime;
         getOldest(city, indexVec[i], nameStart, nameEnd, &oldestTime);
-        fprintf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
+        fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
                oldestTime.tm_hour, oldestTime.tm_min);
     }
 
