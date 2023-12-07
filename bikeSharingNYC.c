@@ -180,6 +180,7 @@ void query4(cityADT city, int startYear, int endYear){
         char * endName, *startName = nameByStationIndex(city, indexVec[i]);
         size_t cantRides;
         getMostPopular(city, i, &cantRides, &endName, startYear, endYear);
-        fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
+        if(endName != NULL)
+            fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
     }
 }

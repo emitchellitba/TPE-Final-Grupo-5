@@ -174,9 +174,10 @@ void query4(cityADT city, int startYear, int endYear){
     fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
 
     for (int i = 0; i < cantStations; ++i) {
-        char * endName, *startName = nameByStationIndex(city, indexVec[i]);
+        char * endName, * startName = nameByStationIndex(city, indexVec[i]);
         size_t cantRides;
-        getMostPopular(city, i, &cantRides, &endName, startYear, endYear);
-        fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
+        getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
+        if(endName != NULL)
+            fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
     }
 }

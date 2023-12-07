@@ -298,34 +298,36 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
-void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
-
-    tStation station = city->stations[stationIndex];
-    size_t maxRides;
-    char * maxName;
-
-    for (int i = 0; i < station.destiniesCount; ++i) {
-        size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
-
-        if(rides > maxRides) {
-            maxRides = rides;
-            maxName = station.destinies[i].name;
-        }else if(rides == maxRides){
-            if(strcmp(maxName, station.destinies[i].name) < 0){
-                maxRides = rides;
-                maxName = station.destinies[i].name;
-            }
-        }
-    }
-    *ridesOut = maxRides;
-    *endName = maxName;
-}
-
 static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 
     if(ride == NULL)
         return 0;
-    return (startYear != 0 || (ride->start_date.tm_year >= startYear && (endYear != 0 || ride->start_date.tm_year <= endYear)))
+    return (startYear == 0 || (ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
+void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
+    if(city->stations[stationIndex].destiniesCount > 0){
+        tStation station = city->stations[stationIndex];
+        size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
+        char * maxName = station.destinies[0].name;
+
+        for (int i = 1; i < station.destiniesCount; ++i) {
+            size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
+            if(rides > maxRides) {
+                maxRides = rides;
+                maxName = station.destinies[i].name;
+            }else if(rides == maxRides){
+                if(strcmp(maxName, station.destinies[i].name) > 0){
+                    maxRides = rides;
+                    maxName = station.destinies[i].name;
+                }
+            }
+        }
+        *ridesOut = maxRides;
+        *endName = maxName;
+    }else{
+        *ridesOut = 0;
+        *endName = NULL;
+    }
+}
