@@ -3,6 +3,8 @@
 
 #include <time.h>
 
+#define DAYS_OF_WEEK 7
+
 typedef struct cityCDT * cityADT;
 
 
