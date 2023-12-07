@@ -227,3 +227,55 @@ void getIdexByRank(cityADT city, int idexVec[]){
     }
 }
 
+void getIdexByAlph(cityADT city, int idexVec[]){
+
+    tIndex * lista = NULL;
+    for (int i = 0; i < city->stationCount ; i++) {
+        lista = addIndexAlphRec(lista, city->stations[i].name, i);
+    }
+    tIndex * aux = lista;
+    for (int i = 0; i < city->stationCount; ++i) {
+        idexVec[i] = aux->index;
+        aux = aux->next;
+    }
+    for (int i = 0; i < city->stationCount; ++i) {
+        aux = lista->next;
+        free(lista->name);
+        free(lista);
+        lista = aux;
+    }
+}
+
+static
+tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
+    if(actual == NULL || strcmp(actual->name, name) >= 0) {
+        if(actual != NULL && strcmp(actual->name, name) == 0){
+            if(index  > actual->index){
+                actual->next = addIndexRec(actual->next, name, index);
+                return actual;
+            }
+        }
+        tIndex * new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
+        new->name = malloc(strlen(name) + 1);
+        strcpy(new->name, name);
+        new->index = index;
+        new->next = actual;
+        return new;
+    }else{
+        actual->next = addIndexAlphRec()Rec(actual->next, name, index);
+        return actual;
+    }
+}
+
+void getOldest(cityADT city, int index, char * nameStart, char* nameEnd, struct tm * oldestTime){
+
+    nameStart = city->stations[index].name;
+    nameEnd = city->stations[city->stations[index].oldestDestinyIdx].name;
+    oldestTime->tm_mday = city->stations[index].oldest_date.tm_mday;
+    oldestTime->tm_mon = city->stations[index].oldest_date->tm_mon;
+    oldestTime->tm_year = city->stations[index].oldest_date.tm_year;
+    oldestTime->tm_hour = city->stations[index].oldest_date.tm_hour;
+    oldestTime->tm_min = city->stations[index].oldest_date.tm_min;
+
+
+}

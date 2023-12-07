@@ -116,3 +116,24 @@ void query1(cityADT city){
     }
     fclose(file);
 }
+
+void query2(cityADT city){
+
+    int cantStations = getStationCount(city);
+    int indexVec[cantStations];
+
+    getIdexByAlph(city, indexVec);
+
+    FILE * file = fopen("query2.csv", "w");
+
+    for (int i = 0; i < cantStations; ++i) {
+        char * nameStart, * nameEnd;
+        struct tm oldesTime;
+        getOldest(city, indexVec[i], nameStart, nameEnd, &oldesTime);
+        fprinf("%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldesTime.tm_day, oldesTime.tm_mon, oldesTime.tm_year,
+               oldesTime.tm_hour, oldesTime.tm_min);
+    }
+
+
+    fclose(file);
+}
