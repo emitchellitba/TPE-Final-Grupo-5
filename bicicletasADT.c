@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 
+#define DAYS_OF_WEEK 7
 #define BLOCK 50
 
 typedef struct index{
@@ -30,7 +31,7 @@ typedef struct station{
     size_t id;
     tDestiny * destinies;
     size_t destiniesCount;
-    size_t oldestDestinyIdx;
+    char * oldestDestinyName;
     struct tm oldest_date;
     size_t memberRides;
     size_t casualRides;
@@ -71,6 +72,7 @@ int addStation(cityADT city, char * name, size_t id){
         city->stations[i].destinies = NULL;
         city->stations[i].destiniesCount = 0;
         city->stations[i].memberRides = city->stations[i].casualRides = 0;
+        city->stations[i].oldestDestinyName = NULL;
         city->stationCount++;
     }
     return !esta;
@@ -139,7 +141,8 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         }
         
         if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
-            station->oldestDestinyIdx = endIndex;
+            station->oldestDestinyName = realloc(station->oldestDestinyName, strlen(city->stations[endIndex].name) + 1);
+            strcpy(station->oldestDestinyName, city->stations[endIndex].name);
             station->oldest_date = start_date;
         }
 
@@ -168,6 +171,7 @@ void freeRides(tRide * ride){
 void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
         free(city->stations[i].name);
+        free(city->stations[i].oldestDestinyName);
         for(int j = 0; j < city->stations[i].destiniesCount; j++)
             freeRides(city->stations[i].destinies[j].rides);
         free(city->stations[i].destinies);
@@ -272,22 +276,13 @@ void getIndexByAlph(cityADT city, int indexVec[]){
     freeList(lista);
 }
 
-void getOldest(cityADT city, int index, char * nameStart, char* nameEnd, struct tm * oldestTime){
+void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
 
-    nameStart = city->stations[index].name;
-    nameEnd = city->stations[city->stations[index].oldestDestinyIdx].name;
+    *nameStart = city->stations[index].name;
+    *nameEnd = city->stations[index].oldestDestinyName;
     oldestTime->tm_mday = city->stations[index].oldest_date.tm_mday;
     oldestTime->tm_mon = city->stations[index].oldest_date.tm_mon;
     oldestTime->tm_year = city->stations[index].oldest_date.tm_year;
     oldestTime->tm_hour = city->stations[index].oldest_date.tm_hour;
     oldestTime->tm_min = city->stations[index].oldest_date.tm_min;
-
-}
-
-size_t getStartedRides(cityADT city, int index) {
-    return city->startedRidesPerDay[index];
-}
-
-size_t getEndRides(cityADT city, int index) {
-    return city->endedRidesPerDay[index];
 }
