@@ -35,7 +35,7 @@ void freeCity(cityADT city);
 
 size_t getStartedRides(cityADT city, int index);
 
-size_t getEndRides(cityADT city, int index);
+size_t getEndedRides(cityADT city, int index);
 
 
 #endif

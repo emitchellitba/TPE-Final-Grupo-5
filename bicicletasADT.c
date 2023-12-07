@@ -291,6 +291,6 @@ size_t getStartedRides(cityADT city, int index) {
     return city->startedRidesPerDay[index];
 }
 
-size_t getEndRides(cityADT city, int index) {
+size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
