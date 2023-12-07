@@ -9,6 +9,8 @@
 
 void query1(cityADT city);
 
+void query3(cityADT city);
+
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
     if(endYear < 0 || startYear < 0) return 0;
@@ -117,6 +119,20 @@ void query1(cityADT city){
         ridesByStationIndex(city, indexVec[i], v);
         char * name = nameByStationIndex(city, indexVec[i]);
         fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
+    }
+    fclose(file);
+}
+
+
+void query3(cityADT city) {
+    FILE * file;
+    file = fopen("query3.csv", "w+");
+
+    char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+    fprintf(file, "weekDay;startedTrips;endedTrips\n");
+    for(int i = 0; i < DAYS_OF_WEEK; i++) {
+        fprintf(file, "%s;%d;%d", weekVec[i], getStartedRides(city, i), getEndedRides(city, i));
     }
     fclose(file);
 }
