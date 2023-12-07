@@ -39,7 +39,8 @@ typedef struct station{
 
 typedef struct cityCDT{
     tStation * stations;
-    size_t ridesPerDay[DAYS_OF_WEEK];
+    size_t startedRidesPerDay[DAYS_OF_WEEK];
+    size_t endedRidesPerDay[DAYS_OF_WEEK];
     size_t stationCount;
 } cityCDT;
 
@@ -138,7 +139,7 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             station->destiniesCount++;
         }
         
-        if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
+        if(startStationId != endStationId && (station(station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
             station->oldestDestinyIdx = endIndex;
             station->oldest_date = start_date;
         }
@@ -150,7 +151,10 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             station->casualRides++;
     
         mktime(&start_date);
-        city->ridesPerDay[start_date.tm_wday]++;
+        city->startedRidesPerDay[start_date.tm_wday]++;
+        mktime(&end_date);
+        city->endedRidesPerDay[end_date.tm_wday]++;
+
     }
 }
 
