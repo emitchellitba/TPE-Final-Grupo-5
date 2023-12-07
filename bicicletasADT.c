@@ -139,7 +139,7 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             station->destiniesCount++;
         }
         
-        if(startStationId != endStationId && (station(station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
+        if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
             station->oldestDestinyIdx = endIndex;
             station->oldest_date = start_date;
         }
