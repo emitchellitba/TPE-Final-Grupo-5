@@ -298,37 +298,34 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
-void getMostPopular(tStation station, int * rides, char ** endName, int startYear, int endYear){
+void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
 
+    tStation station = city->stations[stationIndex];
     size_t maxRides;
     char * maxName;
 
-
-
     for (int i = 0; i < station.destiniesCount; ++i) {
-        size_t rides =  getRidesBetween(station.destinies[i], startYear, endYear);
+        size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
 
         if(rides > maxRides) {
             maxRides = rides;
-            
+            maxName = station.destinies[i].name;
         }else if(rides == maxRides){
-            if(strcmp(maxName, station.destinies.name) < 0)
+            if(strcmp(maxName, station.destinies[i].name) < 0){
                 maxRides = rides;
+                maxName = station.destinies[i].name
+            }
         }
     }
+    *ridesOut = maxRides;
+    *endName = maxName;
 }
 
-size_t getRidesBetween(tDestiny destino, size_t startYear, size_t endYear){
+static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 
-
-
-    for (int i = 0; i < ; ++i) {
-        if(startYear != 0 || destino.rides->start_date.tm_year >= startYear)
-            if(endYear != 0 || destino.rides->end_date <= endYear)
-
-    }
-
-
-
+    if(ride == NULL)
+        return 0;
+    return (startYear != 0 || (ride->start_date.tm_year >= startYear && (endYear != 0 || ride->start_date.tm_year <= endYear)))
+        + getRidesBetween(ride->next, startYear, endYear);
 }
 

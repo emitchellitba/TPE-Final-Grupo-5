@@ -37,5 +37,8 @@ size_t getStartedRides(cityADT city, int index);
 
 size_t getEndedRides(cityADT city, int index);
 
+void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear);
+
+
 
 #endif

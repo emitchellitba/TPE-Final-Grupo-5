@@ -10,6 +10,8 @@
 void query1(cityADT city);
 void query2(cityADT city);
 void query3(cityADT city);
+void query4(cityADT city, int startYear, int endYear);
+
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
@@ -99,6 +101,7 @@ int main(int argc, char * argv[]){
     query1(nyc);
     query2(nyc);
     query3(nyc);
+    query4(nyc, startYear, endYear);
 
     freeCity(nyc);
 
@@ -160,4 +163,23 @@ void query3(cityADT city) {
         fprintf(file, "%s;%ld;%ld\n", weekVec[i], getStartedRides(city, i), getEndedRides(city, i));
     }
     fclose(file);
+}
+
+void query4(cityADT city, int startYear, int endYear){
+
+    size_t cantStations = getStationCount(city);
+    int indexVec[cantStations];
+
+    getIndexByAlph(city, indexVec);
+
+    FILE * file = fopen("query4.csv", "w+");
+
+    fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
+
+    for (int i = 0; i < cantStations; ++i) {
+        char * endName, *startName = nameByStationIndex(city, indexVec[i]);
+        size_t cantRides;
+        getMostPopular(city, i, &cantRides, &endName, startYear, endYear);
+        fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
+    }
 }
