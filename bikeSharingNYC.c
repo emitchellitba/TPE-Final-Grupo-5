@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "..\cTable\htmlTable.h"
+#include "cTable\htmlTable.h"
 
 #define MAX_TOKENS 100
 #define PARAM_ERROR -1
@@ -130,9 +130,9 @@ void query1(cityADT city){
         ridesByStationIndex(city, indexVec[i], v);
         char * name = nameByStationIndex(city, indexVec[i]);
         fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
-        sprintf(memstr, "%d", v[0]);
-        sprintf(casstr, "%d", v[1]);
-        sprintf(allnum, "%d", v[0]+v[1]);
+        sprintf(memstr, "%ld", v[0]);
+        sprintf(casstr, "%ld", v[1]);
+        sprintf(allnum, "%ld", v[0]+v[1]);
         addHTMLRow(table, name, memstr, casstr, allnum);
     }
     closeHTMLTable(table);
@@ -178,8 +178,8 @@ void query3(cityADT city) {
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
     for(int i = 0; i < DAYS_OF_WEEK; i++) {
         size_t cantStartedTrips = getStartedRides(city, i), cantEndedTrips = getEndedRides(city, i);
-        sprintf(num1, "%ld", cantStartedTrips);
-        sprintf(num2, "%ld", cantEndedTrips);
+        sprintf(numstr1, "%ld", cantStartedTrips);
+        sprintf(numstr2, "%ld", cantEndedTrips);
         fprintf(file, "%s;%ld;%ld\n", weekVec[i], cantStartedTrips, cantEndedTrips);
         addHTMLRow(table, weekVec[i], numstr1, numstr2);
     }
@@ -203,7 +203,7 @@ void query4(cityADT city, int startYear, int endYear){
         char * endName, * startName = nameByStationIndex(city, indexVec[i]);
         size_t cantRides;
         getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
-        sprintf(num, "%ld", cantRides);
+        sprintf(numstr, "%ld", cantRides);
         if(endName != NULL) {
             fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
             addHTMLRow(table, startName, endName, numstr);
