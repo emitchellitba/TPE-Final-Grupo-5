@@ -3,13 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "C:\Users\pc\Documents\GitHub\TPE-Final-Grupo-4\cTable\htmlTable.h"
+#include "..\cTable\htmlTable.h"
 
 #define MAX_TOKENS 100
 #define PARAM_ERROR -1
 #define MAX_TEXT 50
-#define SIZE_RIDES 10
-#define SIZE_DATE 13
+#define SIZE_NUM 10
+#define SIZE_DATE 16
 
 void query1(cityADT city);
 void query2(cityADT city);
@@ -117,15 +117,22 @@ void query1(cityADT city){
 
     FILE * file;
     file = fopen("query1.csv", "w+");
+    htmlTable table = newTable("query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips");
 
     fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
-    
+    char memstr[SIZE_NUM], casstr[SIZE_NUM], allnum[SIZE_NUM];
+
     for (int i = 0; i < cantStations; ++i) {
         unsigned long v[2];
         ridesByStationIndex(city, indexVec[i], v);
         char * name = nameByStationIndex(city, indexVec[i]);
         fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
+        sprintf(memstr, "%d", v[0]);
+        sprintf(casstr, "%d", v[1]);
+        sprintf(allnum, "%d", v[0]+v[1]);
+        addHTMLRow(table, name, memstr, casstr, allnum);
     }
+    closeHTMLTable(table);
     fclose(file);
 }
 
@@ -141,8 +148,6 @@ void query2(cityADT city){
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
     char datestr[SIZE_DATE];    
 
-    strftime(datestr, SIZE_DATE, "%d/%m/%Y %H:%")
-
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
     for (int i = 0; i < cantStations; ++i) {
         char * nameStart, * nameEnd;
@@ -151,10 +156,11 @@ void query2(cityADT city){
         if(nameEnd != NULL){
             fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
                oldestTime.tm_hour, oldestTime.tm_min);
+            sprintf(datestr, "%d/%d/%d %d:%d", oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year, oldestTime.tm_hour, oldestTime.tm_min);
+            addHTMLRow(table, nameStart, nameEnd, datestr);
         }
     }
-
-
+    closeHTMLTable(table);
     fclose(file);
 }
 
@@ -163,8 +169,8 @@ void query3(cityADT city) {
     file = fopen("query3.csv", "w+");
 
     char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-    htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips")
-    char numstr1[SIZE_RIDES], numstr2[SIZE_RIDES];
+    htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips");
+    char numstr1[SIZE_NUM], numstr2[SIZE_NUM];
 
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
     for(int i = 0; i < DAYS_OF_WEEK; i++) {
@@ -188,7 +194,7 @@ void query4(cityADT city, int startYear, int endYear){
 
     fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
     htmlTable table = newTable("query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips");
-    char numstr[SIZE_RIDES];
+    char numstr[SIZE_NUM];
 
     for (int i = 0; i < cantStations; ++i) {
         char * endName, * startName = nameByStationIndex(city, indexVec[i]);
