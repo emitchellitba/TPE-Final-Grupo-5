@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include "C:\Users\pc\Documents\GitHub\TPE-Final-Grupo-4\cTable\htmlTable.h"
 
 #define MAX_TOKENS 100
 #define PARAM_ERROR -1
 #define MAX_TEXT 50
+#define SIZE_RIDES 10
+#define SIZE_DATE 13
 
 void query1(cityADT city);
 void query2(cityADT city);
@@ -134,6 +138,11 @@ void query2(cityADT city){
 
     FILE * file = fopen("query2.csv", "w+");
 
+    htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
+    char datestr[SIZE_DATE];    
+
+    strftime(datestr, SIZE_DATE, "%d/%m/%Y %H:%")
+
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
     for (int i = 0; i < cantStations; ++i) {
         char * nameStart, * nameEnd;
@@ -154,10 +163,16 @@ void query3(cityADT city) {
     file = fopen("query3.csv", "w+");
 
     char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips")
+    char numstr1[SIZE_RIDES], numstr2[SIZE_RIDES];
 
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
     for(int i = 0; i < DAYS_OF_WEEK; i++) {
-        fprintf(file, "%s;%ld;%ld\n", weekVec[i], getStartedRides(city, i), getEndedRides(city, i));
+        size_t cantStartedTrips = getStartedRides(city, i), cantEndedTrips = getEndedRides(city, i);
+        sprintf(num1, "%ld", cantStartedTrips);
+        sprintf(num2, "%ld", cantEndedTrips);
+        fprintf(file, "%s;%ld;%ld\n", weekVec[i], cantStartedTrips, cantEndedTrips);
+        addHTMLRow(table, weekVec[i], numstr1, numstr2);
     }
     fclose(file);
 }
@@ -172,12 +187,18 @@ void query4(cityADT city, int startYear, int endYear){
     FILE * file = fopen("query4.csv", "w+");
 
     fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
+    htmlTable table = newTable("query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips");
+    char numstr[SIZE_RIDES];
 
     for (int i = 0; i < cantStations; ++i) {
         char * endName, * startName = nameByStationIndex(city, indexVec[i]);
         size_t cantRides;
         getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
-        if(endName != NULL)
+        sprintf(num, "%ld", cantRides);
+        if(endName != NULL) {
             fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
+            addHTMLRow(table, startName, endName, numstr);
+        }
+        closeHTMLTable(table);
     }
 }

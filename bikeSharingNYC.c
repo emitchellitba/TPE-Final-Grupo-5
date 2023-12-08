@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "C:\Users\pc\Documents\GitHub\TPE-Final-Grupo-4\cTable\htmlTable.h"
 
 #define MAX_TOKENS 100
 #define PARAM_ERROR -1
