@@ -183,6 +183,7 @@ void query3(cityADT city) {
         fprintf(file, "%s;%ld;%ld\n", weekVec[i], cantStartedTrips, cantEndedTrips);
         addHTMLRow(table, weekVec[i], numstr1, numstr2);
     }
+    closeHTMLTable(table);
     fclose(file);
 }
 
