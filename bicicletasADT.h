@@ -14,12 +14,12 @@ cityADT newCity(void);
 int addStation(cityADT city, char * name, size_t id);
 
 /* Agrega un viaje con los datos dados. Si las estaciones de incio o fin no existen, se ignora el viaje */
-void addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember);
+int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember);
 
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);
 
-void getIdexByRank(cityADT city, int idexVec[]);
+int getIndexByRank(cityADT city, int idexVec[]);
 
 char * nameByStationIndex(cityADT city, int idex);
 
@@ -27,9 +27,9 @@ int getStationCount(cityADT city);
 
 void ridesByStationIndex(cityADT city,int idex, size_t rides[2]);
 
-void getIndexByRank(cityADT city, int indexVec[]);
+int getIndexByRank(cityADT city, int indexVec[]);
 
-void getIndexByAlph(cityADT city, int indexVec[]);
+int getIndexByAlph(cityADT city, int indexVec[]);
 
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime);
 

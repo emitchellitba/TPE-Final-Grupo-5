@@ -63,8 +63,9 @@ cityADT newCity(void){
 
 
 int addStation(cityADT city, char * name, size_t id){
-    errno = 0;
+
     /* Primero nos fijamos que no exista, recorriendo el vector */
+    errno = 0;
     int esta = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
@@ -78,13 +79,13 @@ int addStation(cityADT city, char * name, size_t id){
             tStation * aux = city->stations;
             aux = realloc(aux, (i + BLOCK) * sizeof(tStation));
             if(aux == NULL || errno == ENOMEM) {
-                //Que hacer en este caso?
+                return errno;
             }
         }
-        errno = 0;
         city->stations[i].name = malloc(strlen(name) + 1);
         if(city->stations[i].name == NULL || errno == ENOMEM) {
-            //?
+            city->stationCount++;       //para luego poder liberar la memoria en su totalidad
+            return errno;
         }
         strcpy(city->stations[i].name, name);
         city->stations[i].id = id;
@@ -116,25 +117,26 @@ int dateCompare(struct tm d1, struct tm d2){
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
 se guardan ambos, en orden de agregado */
 static
-tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
+tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date, int * errno){
     int cmp;
     if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
         errno = 0;
         tRide * new = malloc(sizeof(tRide));          
         if(new == NULL || errno == ENOMEM) {
-            //?
-        }
+            return ride; 
+        } 
         new->start_date = start_date;
         new->end_date = end_date;
         new->next = ride;
         return new;
     }
-    addRideRec(ride->next, start_date, end_date);
+    addRideRec(ride->next, start_date, end_date, errno);
     return ride;
 }
 
 
-void addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
+int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
+    errno = 0;
     tStation * station;
     size_t i;
     char * endName;
@@ -160,7 +162,7 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         int foundDestiny = 0;
         for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
             if(strcmp(station->destinies[i].name, endName) == 0){
-                station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date);
+                station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date, &errno);
                 foundDestiny = 1;
             }
         }
@@ -168,20 +170,18 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
-                errno = 0;
                 tStation * aux = station->destinies;
                 aux = realloc(aux, (i + BLOCK) * sizeof(tDestiny));
                 if(aux == NULL || errno == ENOMEM) {
-                    //?
+                    return errno;
                 }
             }
-            errno = 0; //dependiendo que hagamos arriba esto se saca o se deja!!!
             station->destinies[i].name = malloc(strlen(endName) + 1);
             if(station->destinies[i].name == NULL || errno == ENOMEM) {
-                //?
+                return errno;
             }
             strcpy(station->destinies[i].name, endName); 
-            station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
+            station->destinies[i].rides = addRideRec(NULL, start_date, end_date, errno);
             station->destiniesCount++;
         }
         
@@ -189,11 +189,10 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         Chequeo que el viaje no sea circular. Si no lo es, lo comparo con el mas viejo registrado (a menos que sea el primero)
          y si es anterior lo reemplazo */
         if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
-            errno = 0;
             char * aux = station->oldestDestinyName;
             aux = realloc(station->oldestDestinyName, strlen(endName) + 1);
             if(aux == NULL || errno == ENOMEM) {
-                //?
+                return errno;
             }
             strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
@@ -210,8 +209,8 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         city->startedRidesPerDay[start_date.tm_wday]++;
         mktime(&end_date);
         city->endedRidesPerDay[end_date.tm_wday]++;
-
     }
+    return errno;
 }
 
 static
@@ -271,22 +270,22 @@ void freeList(tIndex * lista){
 
 
 static
-tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index){
+tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index, int * errno){
     if(actual == NULL || actual->totalRides <= totalRides) {
         if(actual != NULL && actual->totalRides == totalRides){
             if(strcmp(actual->name, name) < 0){
-                actual->next = addIndexRec(actual->next, name, totalRides, index);
+                actual->next = addIndexRec(actual->next, name, totalRides, index, errno);
                 return actual;
             }
         }
-        errno = 0;
         tIndex * new = malloc(sizeof(tIndex));
         if(new == NULL || errno == ENOMEM) {
-            //?
+            return actual;
         }
         new->name = malloc(strlen(name) + 1);
         if(new->name == NULL || errno == ENOMEM) {
-            //?
+            free(new);
+            return actual;
         }
         strcpy(new->name, name);
         new->totalRides = totalRides;
@@ -294,58 +293,59 @@ tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index)
         new->next = actual;
         return new;
     }else{
-        actual->next = addIndexRec(actual->next, name, totalRides, index);
+        actual->next = addIndexRec(actual->next, name, totalRides, index, errno);
         return actual;
     }
 }
 
-void getIndexByRank(cityADT city, int indexVec[]){
-
+int getIndexByRank(cityADT city, int indexVec[]){
+    errno = 0;
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
+        lista = addIndexRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i, &errno);
     }
     listToArray(lista, city->stationCount, indexVec);
     freeList(lista);
+    return errno;
 }
 
 static
-tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
+tIndex * addIndexAlphRec(tIndex * actual, char * name, int index, int * errno){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
         if(actual != NULL && strcmp(actual->name, name) == 0){
             if(index  > actual->index){
-                actual->next = addIndexAlphRec(actual->next, name, index);
+                actual->next = addIndexAlphRec(actual->next, name, index, errno);
                 return actual;
             }
         }
-        errno = 0;
         tIndex * new = malloc(sizeof(tIndex));
         if(new == NULL || errno == ENOMEM) {
-            //?
+            return actual;
         }
         new->name = malloc(strlen(name) + 1);
-        // errno = 0;
         if(new->name == NULL || errno == ENOMEM) {
-            //?
+            free(new);
+            return actual;
         }
         strcpy(new->name, name);
         new->index = index;
         new->next = actual;
         return new;
     }else{
-        actual->next = addIndexAlphRec(actual->next, name, index);
+        actual->next = addIndexAlphRec(actual->next, name, index, errno);
         return actual;
     }
 }
 
-void getIndexByAlph(cityADT city, int indexVec[]){
-
+int getIndexByAlph(cityADT city, int indexVec[]){
+    errno = 0;
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexAlphRec(lista, city->stations[i].name, i);
+        lista = addIndexAlphRec(lista, city->stations[i].name, i, &errno);
     }
     listToArray(lista, city->stationCount, indexVec);
     freeList(lista);
+    return errno;
 }
 
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
