@@ -56,14 +56,14 @@ typedef struct cityCDT{
 
 
 cityADT newCity(void){
-    cityADT new = calloc(1, sizeof(cityCDT));       //FALTARIA CHEQUEAR LO DE NULL        
+    cityADT new = calloc(1, sizeof(cityCDT));
 
-    return new;
+    return new; //si retorna NULL, es porque dio error el calloc.
 }
 
 
 int addStation(cityADT city, char * name, size_t id){
-    
+    errno = 0;
     /* Primero nos fijamos que no exista, recorriendo el vector */
     int esta = 0;
     size_t i;
@@ -75,10 +75,17 @@ int addStation(cityADT city, char * name, size_t id){
     /* Si no esta, se crea */
     if(!esta){
         if(i % BLOCK == 0){
-            city->stations = realloc(city->stations, (i + BLOCK) * sizeof(tStation));
-            //FALTARIA CHEQEUAR NULL
+            tStation * aux = city->stations;
+            aux = realloc(aux, (i + BLOCK) * sizeof(tStation));
+            if(aux == NULL || errno == ENOMEM) {
+                //Que hacer en este caso?
+            }
         }
+        errno = 0;
         city->stations[i].name = malloc(strlen(name) + 1);
+        if(city->stations[i].name == NULL || errno == ENOMEM) {
+            //?
+        }
         strcpy(city->stations[i].name, name);
         city->stations[i].id = id;
         city->stations[i].destinies = NULL;
@@ -112,7 +119,11 @@ static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
     int cmp;
     if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
-        tRide * new = malloc(sizeof(tRide));                    //FALTARIA CHEQUEAR NULL
+        errno = 0;
+        tRide * new = malloc(sizeof(tRide));          
+        if(new == NULL || errno == ENOMEM) {
+            //?
+        }
         new->start_date = start_date;
         new->end_date = end_date;
         new->next = ride;
@@ -157,10 +168,18 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
-                station->destinies = realloc(station->destinies, (i + BLOCK) * sizeof(tDestiny));
-                //FALTARIA CHEQUeAR NULL
+                errno = 0;
+                tStation * aux = station->destinies;
+                aux = realloc(aux, (i + BLOCK) * sizeof(tDestiny));
+                if(aux == NULL || errno == ENOMEM) {
+                    //?
+                }
             }
-            station->destinies[i].name = malloc(strlen(endName) + 1);             //chequear null 
+            errno = 0; //dependiendo que hagamos arriba esto se saca o se deja!!!
+            station->destinies[i].name = malloc(strlen(endName) + 1);
+            if(station->destinies[i].name == NULL || errno == ENOMEM) {
+                //?
+            }
             strcpy(station->destinies[i].name, endName); 
             station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
             station->destiniesCount++;
@@ -170,7 +189,12 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
         Chequeo que el viaje no sea circular. Si no lo es, lo comparo con el mas viejo registrado (a menos que sea el primero)
          y si es anterior lo reemplazo */
         if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
-            station->oldestDestinyName = realloc(station->oldestDestinyName, strlen(endName) + 1);
+            errno = 0;
+            char * aux = station->oldestDestinyName;
+            aux = realloc(station->oldestDestinyName, strlen(endName) + 1);
+            if(aux == NULL || errno == ENOMEM) {
+                //?
+            }
             strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
         }
@@ -255,8 +279,15 @@ tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index)
                 return actual;
             }
         }
-        tIndex * new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
+        errno = 0;
+        tIndex * new = malloc(sizeof(tIndex));
+        if(new == NULL || errno == ENOMEM) {
+            //?
+        }
         new->name = malloc(strlen(name) + 1);
+        if(new->name == NULL || errno == ENOMEM) {
+            //?
+        }
         strcpy(new->name, name);
         new->totalRides = totalRides;
         new->index = index;
@@ -287,8 +318,16 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
                 return actual;
             }
         }
-        tIndex * new = malloc(sizeof(tIndex));            //CHEQUEAR NULL
+        errno = 0;
+        tIndex * new = malloc(sizeof(tIndex));
+        if(new == NULL || errno == ENOMEM) {
+            //?
+        }
         new->name = malloc(strlen(name) + 1);
+        // errno = 0;
+        if(new->name == NULL || errno == ENOMEM) {
+            //?
+        }
         strcpy(new->name, name);
         new->index = index;
         new->next = actual;
