@@ -268,17 +268,9 @@ void freeList(tIndex * lista){
     }
 }
 
-
 static
-tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index, int * errno){
-    if(actual == NULL || actual->totalRides <= totalRides) {
-        if(actual != NULL && actual->totalRides == totalRides){
-            if(strcmp(actual->name, name) < 0){
-                actual->next = addIndexRec(actual->next, name, totalRides, index, errno);
-                return actual;
-            }
-        }
-        tIndex * new = malloc(sizeof(tIndex));
+tIndex * newNode(tIndex * actual, char * name, size_t totalRides, int index, int * errno) {
+    tIndex * new = malloc(sizeof(tIndex));
         if(new == NULL || errno == ENOMEM) {
             return actual;
         }
@@ -292,17 +284,30 @@ tIndex * addIndexRec(tIndex * actual, char * name, size_t totalRides, int index,
         new->index = index;
         new->next = actual;
         return new;
+}
+
+static
+tIndex * addIndexRankRec(tIndex * actual, char * name, size_t totalRides, int index, int * errno){
+    if(actual == NULL || actual->totalRides <= totalRides) {
+        if(actual != NULL && actual->totalRides == totalRides){
+            if(strcmp(actual->name, name) < 0){
+                actual->next = addIndexRankRec(actual->next, name, totalRides, index, errno);
+                return actual;
+            }
+        }
+        return newNode(actual, name, totalRides, index, errno);
     }else{
-        actual->next = addIndexRec(actual->next, name, totalRides, index, errno);
+        actual->next = addIndexRankRec(actual->next, name, totalRides, index, errno);
         return actual;
     }
 }
+
 
 int getIndexByRank(cityADT city, int indexVec[]){
     errno = 0;
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i, &errno);
+        lista = addIndexRankRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i, &errno);
     }
     listToArray(lista, city->stationCount, indexVec);
     freeList(lista);
@@ -312,25 +317,7 @@ int getIndexByRank(cityADT city, int indexVec[]){
 static
 tIndex * addIndexAlphRec(tIndex * actual, char * name, int index, int * errno){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
-        if(actual != NULL && strcmp(actual->name, name) == 0){
-            if(index  > actual->index){
-                actual->next = addIndexAlphRec(actual->next, name, index, errno);
-                return actual;
-            }
-        }
-        tIndex * new = malloc(sizeof(tIndex));
-        if(new == NULL || errno == ENOMEM) {
-            return actual;
-        }
-        new->name = malloc(strlen(name) + 1);
-        if(new->name == NULL || errno == ENOMEM) {
-            free(new);
-            return actual;
-        }
-        strcpy(new->name, name);
-        new->index = index;
-        new->next = actual;
-        return new;
+        return newNode(actual, name, NULL, index, errno);
     }else{
         actual->next = addIndexAlphRec(actual->next, name, index, errno);
         return actual;
@@ -367,6 +354,7 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
+/*Retorna la cantidad de viajes entre startYear y endYear para un origen y un destino en concreto*/
 static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 
     if(ride == NULL)
