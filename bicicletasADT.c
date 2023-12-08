@@ -15,6 +15,14 @@ typedef struct index{
     struct index * next;
 }tIndex;
 
+/* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
+información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
+Dentro de los vectores de destinos, se almacena su nombre y un puntero al primer elemento de una lista de los viajes realizados entre esas 
+dos estaciones, en orden cronológico. Decidimos separar por destino ya que nos facilitaba buscar el destino mas popular (query 4). 
+De los vectores dinámicos, nos vamos guardando su dimension para poder recorrerlos. 
+Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico o cantidad de viajes), decidimos guardarlos por orden
+de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
+
 typedef struct ride{
     struct tm start_date;
     struct tm end_date;
@@ -55,12 +63,16 @@ cityADT newCity(void){
 
 
 int addStation(cityADT city, char * name, size_t id){
+    
+    /* Primero nos fijamos que no exista, recorriendo el vector */
     int esta = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
         if(city->stations[i].id == id)
             esta = 1;
     }
+    
+    /* Si no esta, se crea */
     if(!esta){
         if(i % BLOCK == 0){
             city->stations = realloc(city->stations, (i + BLOCK) * sizeof(tStation));
@@ -79,6 +91,8 @@ int addStation(cityADT city, char * name, size_t id){
 }
 
 
+/* Compara las fechas. Retorna un numero negativo si la primera es anterior, positivo si es posterior
+y cero si son iguales */
 static
 int dateCompare(struct tm d1, struct tm d2){
     int diff;
@@ -91,6 +105,9 @@ int dateCompare(struct tm d1, struct tm d2){
     return diff;
 }
 
+
+/* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
+se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
     int cmp;
@@ -113,6 +130,8 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
     int foundStart = 0;
     int foundEnd = 0;
 
+    
+    /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
     for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
         if(city->stations[i].id == startStationId){
             station = &(city->stations[i]);
@@ -123,7 +142,10 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             foundEnd = 1;
         }
     }
+    // Si ambas existen, agrego el viaje
     if((foundStart && foundEnd)){
+        
+        // Si el destino ya existe dentro de la estacion de origen, lo agrego a esa lista
         int foundDestiny = 0;
         for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
             if(strcmp(station->destinies[i].name, endName) == 0){
@@ -131,6 +153,8 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
                 foundDestiny = 1;
             }
         }
+        
+        // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
                 station->destinies = realloc(station->destinies, (i + BLOCK) * sizeof(tDestiny));
@@ -142,18 +166,22 @@ void addRide(cityADT city, size_t startStationId, struct tm start_date, struct t
             station->destiniesCount++;
         }
         
+        /* Nos guardamos el viaje mas viejo para el query 3
+        Chequeo que el viaje no sea circular. Si no lo es, lo comparo con el mas viejo registrado (a menos que sea el primero)
+         y si es anterior lo reemplazo */
         if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
             station->oldestDestinyName = realloc(station->oldestDestinyName, strlen(endName) + 1);
             strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
         }
 
-        
+        /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
         if(isMember)
             station->memberRides++;
         else
             station->casualRides++;
     
+        /* Para el query 2, registramos que dia de la semana se inicio y termino el viaje */
         mktime(&start_date);
         city->startedRidesPerDay[start_date.tm_wday]++;
         mktime(&end_date);
@@ -182,6 +210,8 @@ void freeCity(cityADT city){
     free(city->stations);
     free(city);
 }
+
+// FUNCIONES QUERY 1
 
 void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
     rides[0] = city->stations[index].memberRides;
