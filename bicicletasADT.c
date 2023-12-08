@@ -8,12 +8,6 @@
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
 
-typedef struct index{
-    char * name;
-    size_t totalRides;
-    int index;
-    struct index * next;
-}tIndex;
 
 /* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
 información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
@@ -52,6 +46,15 @@ typedef struct cityCDT{
     size_t stationCount;
 } cityCDT;
 
+
+/* Estructura usada para hacer listas ordenadas segun la cantidad de viajes o alfabeticamente, para poder crear vectores
+con los indices ordenados (para las funciones getIndexByRank y getIndexByAlph)*/
+typedef struct index{
+    char * name;
+    size_t totalRides;
+    int index;
+    struct index * next;
+}tIndex;
 
 
 
@@ -302,6 +305,12 @@ tIndex * addIndexRankRec(tIndex * actual, char * name, size_t totalRides, int in
     }
 }
 
+
+/* Deja en indexVec los indices ordenados según la cantidad total de viajes que tiene esa estación, descendentemente; si tienen 
+la misma cantidad de viajes, se pone primero el alfabeticamente menor (requisito query 1). Primero recorremos el vector de estaciones, 
+y paralelamente nos armamos una lista ordenada segun el criterio. Cada nodo de la lista almacena la cantidad de viajes y el nombre
+de las estacion para realizar las comparaciones correspondientes, y tambien el indice para luego hacer el vector.
+Luego pasamos esa lista a un vector y la retornamos. */
 
 int getIndexByRank(cityADT city, int indexVec[]){
     errno = 0;
