@@ -333,6 +333,7 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index, int * errno){
     }
 }
 
+/*Idem getIndexByRank pero con orden aflabetico*/
 int getIndexByAlph(cityADT city, int indexVec[]){
     errno = 0;
     tIndex * lista = NULL;
@@ -363,8 +364,8 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
-/*Retorna la cantidad de viajes entre startYear y endYear para un origen y un destino en concreto*/
-static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
+/*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
+static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){ 
 
     if(ride == NULL)
         return 0;
@@ -372,12 +373,15 @@ static size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
+/*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
 void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
     if(city->stations[stationIndex].destiniesCount > 0){
         tStation station = city->stations[stationIndex];
+        /*Se setean las variables con los valores del primer destino*/
         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
         char * maxName = station.destinies[0].name;
-
+      
+        /*Se recorren todos los destinos y se compara con el máximo*/
         for (int i = 1; i < station.destiniesCount; ++i) {
             size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
             if(rides > maxRides) {
@@ -393,6 +397,7 @@ void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char *
         *ridesOut = maxRides;
         *endName = maxName;
     }else{
+        /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
         *ridesOut = 0;
         *endName = NULL;
     }
