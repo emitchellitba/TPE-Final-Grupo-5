@@ -13,8 +13,14 @@ cityADT newCity(void);
 /* Agrega una estacion con los datos dados, vacia en viajes. Devuelve 1 si agrega, 0 si no */                         
 int addStation(cityADT city, char * name, size_t id);
 
+/*Optimiza el espacio utilizado por el vector de estaciones*/
+void accomodateStation(cityADT city);
+
 /* Agrega un viaje con los datos dados. Si las estaciones de incio o fin no existen, se ignora el viaje */
 int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember);
+
+/*Optimiza el espacio utilizado por los vectores de destinos*/
+void accomodateDestiny(cityADT city);
 
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);

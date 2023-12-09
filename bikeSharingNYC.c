@@ -11,27 +11,13 @@
 #define SIZE_NUM 10
 #define SIZE_DATE 16
 
+int checkParams(char* bikes, char*stations, int startYear, int endYear);
+void readDate(char * s, struct tm * date);
 void query1(cityADT city);
 void query2(cityADT city);
 void query3(cityADT city);
 void query4(cityADT city, int startYear, int endYear);
 
-
-int checkParams(char* bikes, char*stations, int startYear, int endYear){
-
-    if(endYear < 0 || startYear < 0) return 0;
-    if(startYear != 0 && endYear != 0){
-        if(endYear < startYear) return 0;
-    }
-    if(strcmp(bikes, "bikesNYC.csv") != 0) return 0;
-    if(strcmp(stations,"stationsNYC.csv") != 0) return 0;
-    return 1;
-}
-
-static void
-readDate(char * s, struct tm * date) {
-    sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
-}
 
 int main(int argc, char * argv[]){
 
@@ -78,6 +64,7 @@ int main(int argc, char * argv[]){
         }
     }
     
+    accomodateStation(nyc);
     
     first = 1;
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
@@ -98,6 +85,7 @@ int main(int argc, char * argv[]){
         }
     }
 
+    accomodateDestiny(nyc);
 
     fclose(bikesCsv);
     fclose(stationsCsv);
@@ -110,6 +98,21 @@ int main(int argc, char * argv[]){
     freeCity(nyc);
 
     return 0;
+}
+
+int checkParams(char* bikes, char*stations, int startYear, int endYear){
+
+    if(endYear < 0 || startYear < 0) return 0;
+    if(startYear != 0 && endYear != 0){
+        if(endYear < startYear) return 0;
+    }
+    if(strcmp(bikes, "bikesNYC.csv") != 0) return 0;
+    if(strcmp(stations,"stationsNYC.csv") != 0) return 0;
+    return 1;
+}
+
+void readDate(char * s, struct tm * date) {
+    sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
 
 void query1(cityADT city){

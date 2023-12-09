@@ -102,6 +102,11 @@ int addStation(cityADT city, char * name, size_t id){
 }
 
 
+void accomodateStation(cityADT city) {
+    city->stations = realloc(city->stations, sizeof(tStation) * (city->stationCount));
+}
+
+
 /* Compara las fechas. Retorna un numero negativo si la primera es anterior, positivo si es posterior
 y cero si son iguales */
 static
@@ -218,6 +223,14 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     }
     return errno;
 }
+
+
+void accomodateDestiny(cityADT city) {
+    for(size_t i = 0; i < city->stationCount; i++) {
+        city->stations[i].destinies = realloc(city->stations[i].destinies, sizeof(tDestiny) * (city->stations[i].destiniesCount));
+    }
+}
+
 
 static
 void freeRides(tRide * ride){
