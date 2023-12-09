@@ -24,9 +24,12 @@ int query4(cityADT city, int startYear, int endYear);
 int main(int argc, char * argv[]){
     errno = 0;
     int status = OK;
+    
+    /* Si no se pasan años como parametro, permanecen iguales a 0 */
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
+    /* Se chequea que se pasen dos (sin años), tres (solo con año de inicio) o cuatro (con ambos años) argumentos */
     if(argc < 3 || argc > 5) {
         puts("Invalid amount of arguments");
         return CANT_ARG_ERROR;
@@ -40,6 +43,7 @@ int main(int argc, char * argv[]){
             }
         }
     }
+    /* Se chequea que los parametros sean los esperados */
     if(!checkParams(bikes, stations, startYear, endYear)) {
         puts("Invalid arguments");
         return INVALID_ARG;
@@ -58,6 +62,7 @@ int main(int argc, char * argv[]){
     char aux[MAX_TOKENS];
     bool first = 1;
 
+    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
         unsigned long stationId;
@@ -78,6 +83,7 @@ int main(int argc, char * argv[]){
 
     accomodateStation(montreal);
 
+    /* Se leen y almacenan los viajes, omitiendo la primera linea con el encabezado */
     first = 1;
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
         unsigned long startStationId, endStationId;
@@ -138,6 +144,7 @@ int checkParams(char* bikes, char*stations, int startYear, int endYear){
     return 1;
 }
 
+/* Genera un string a partir de una fecha en struct tm */
 void readDate(char * s, struct tm * date) {
     sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
@@ -219,6 +226,7 @@ int query2(cityADT city){
         char * nameStart, * nameEnd;
         struct tm oldestTime;
         getOldest(city, indexVec[i], &nameStart, &nameEnd, &oldestTime);
+         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
         if(nameEnd != NULL){
             fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
                     oldestTime.tm_hour, oldestTime.tm_min);
@@ -301,6 +309,7 @@ int query4(cityADT city, int startYear, int endYear){
         size_t cantRides;
         getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
         sprintf(numstr, "%ld", cantRides);
+        /* Solo se imprime si la estacion tiene viajes */
         if(endName != NULL) {
             fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
             addHTMLRow(table, startName, endName, numstr);
