@@ -6,7 +6,7 @@
 #include <time.h>
 #include <errno.h>
 
-#define DAYS_OF_WEEK 7
+
 #define BLOCK 50
 
 
@@ -19,8 +19,7 @@ Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico
 de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
 
 typedef struct ride{
-    struct tm start_date;
-    struct tm end_date;
+    struct tm start_date, end_date;
     struct ride * next;
 } tRide;
 
@@ -36,8 +35,7 @@ typedef struct station{
     size_t destiniesCount;
     char * oldestDestinyName;
     struct tm oldest_date;
-    size_t memberRides;
-    size_t casualRides;
+    size_t memberRides, casualRides;
 } tStation;
 
 typedef struct cityCDT{
@@ -79,14 +77,17 @@ int addStation(cityADT city, char * name, size_t id){
         if(i % BLOCK == 0){
             tStation * aux = city->stations;
             aux = realloc(aux, (i + BLOCK) * sizeof(tStation));
-            if(aux == NULL || errno == ENOMEM) {
+    
+            /* Si no hay espacio, no se agrega */
+            if(aux == NULL || errno == ENOMEM){
                 return errno;
             }
             city->stations = aux;
         }
         city->stations[i].name = malloc(strlen(name) + 1);
+        /* Si no hay espacio para el nombre, no se agrega */
         if(city->stations[i].name == NULL || errno == ENOMEM) {
-            return errno;
+            return errno; 
         }
         strcpy(city->stations[i].name, name);
         city->stations[i].id = id;
@@ -124,8 +125,7 @@ int dateCompare(struct tm d1, struct tm d2){
 se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    int cmp;
-    if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
+    if(ride == NULL || dateCompare(start_date, ride->start_date) <= 0){
         tRide * new = malloc(sizeof(tRide));          
         // Si no hay espacio, no se agrega
         if(new == NULL || errno == ENOMEM)
@@ -136,7 +136,7 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
         new->next = ride;
         return new;
     }
-    addRideRec(ride->next, start_date, end_date);
+    ride->next = addRideRec(ride->next, start_date, end_date);
     return ride;
 }
 
@@ -171,9 +171,6 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
                 foundDestiny = 1;
             }
         }
-        
-        /* CONSULTA --------> No seria mas legible si modularizamos el agregado del destino? O tendria q quedar asi/es inecesario?
-        cpz que lo mismo al guardar el viaje mas viejo */
 
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
@@ -255,7 +252,6 @@ void freeCity(cityADT city){
     free(city);
 }
 
-// FUNCIONES QUERY 1
 
 void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
     rides[0] = city->stations[index].memberRides;
@@ -270,6 +266,8 @@ char * nameByStationIndex(cityADT city, int index){
     return city->stations[index].name;
 }
 
+
+/* Completa indexVec con los indices segun aparecen en la lista ordenada */
 static
 void listToArray(tIndex * list, size_t size, int indexVec[]){
     for (int i = 0; i < size; ++i) {
@@ -278,6 +276,7 @@ void listToArray(tIndex * list, size_t size, int indexVec[]){
     }
 }
 
+/* Libera el espacio reservado para la lista utilizada para ordenar los indices */
 static
 void freeList(tIndex * lista){
     tIndex * aux;
@@ -289,6 +288,7 @@ void freeList(tIndex * lista){
     }
 }
 
+/* Agrega un nuevo nodo a la lista, antes de "actual" */
 static
 tIndex * newNode(tIndex * actual, char * name, size_t totalRides, int index) {
     tIndex * new = malloc(sizeof(tIndex));
@@ -307,6 +307,9 @@ tIndex * newNode(tIndex * actual, char * name, size_t totalRides, int index) {
     return new;
 }
 
+
+
+/* Agrega un nuevo nodo, manteniendo la lista ordenada en orden descendente segun cantidad de viajes, con desempate alfabetico.*/
 static
 tIndex * addIndexRankRec(tIndex * actual, char * name, size_t totalRides, int index){
     if(actual == NULL || actual->totalRides <= totalRides) {
@@ -340,6 +343,8 @@ int getIndexByRank(cityADT city, int indexVec[]){
     return errno;
 }
 
+
+/* Agrega un nuevo nodo, manteniendo la lista ordenada alfabeticamente.*/
 static
 tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
@@ -361,6 +366,7 @@ int getIndexByAlph(cityADT city, int indexVec[]){
     return errno;
 }
 
+
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
 
     *nameStart = city->stations[index].name;
@@ -372,6 +378,8 @@ void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, stru
     oldestTime->tm_min = city->stations[index].oldest_date.tm_min;
 }
 
+
+
 size_t getStartedRides(cityADT city, int dayOfWeek) {
     return city->startedRidesPerDay[dayOfWeek];
 }
@@ -379,6 +387,8 @@ size_t getStartedRides(cityADT city, int dayOfWeek) {
 size_t getEndedRides(cityADT city, int dayOfWeek) {
     return city->endedRidesPerDay[dayOfWeek];
 }
+
+
 
 /*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
 static
