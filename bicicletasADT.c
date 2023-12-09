@@ -175,7 +175,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
-                tStation * aux = station->destinies;
+                tDestiny * aux = station->destinies;
                 aux = realloc(aux, (i + BLOCK) * sizeof(tDestiny));
                 if(aux == NULL || errno == ENOMEM) {
                     return errno;

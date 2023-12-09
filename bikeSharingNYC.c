@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
 #include "cTable/htmlTable.h"
 #include <stdbool.h>
 
