@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "cTable/htmlTable.h"
+#include "htmlTable.h"
+#include <stdbool.h>
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
 enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CANT_CREATE_FILE, CANT_CREATE_TABLE};
@@ -55,7 +56,7 @@ int main(int argc, char * argv[]){
     FILE * stationsCsv = fopen(stations, "r");
 
     char aux[MAX_TOKENS];
-    int first = 1;
+    bool first = 1;
     
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
