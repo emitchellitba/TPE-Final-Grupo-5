@@ -20,8 +20,7 @@ Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico
 de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
 
 typedef struct ride{
-    struct tm start_date;
-    struct tm end_date;
+    struct tm start_date, end_date;
     struct ride * next;
 } tRide;
 
@@ -31,21 +30,16 @@ typedef struct destiny {
 } tDestiny;
 
 typedef struct station{
-    char * name;
-    size_t id;
-    tDestiny * destinies;
-    size_t destiniesCount;
-    char * oldestDestinyName;
     struct tm oldest_date;
-    size_t memberRides;
-    size_t casualRides;
+    char * name;
+    char * oldestDestinyName;
+    tDestiny * destinies;
+    size_t destiniesCount, id, memberRides, casualRides;
 } tStation;
 
 typedef struct cityCDT{
     tStation * stations;
-    size_t startedRidesPerDay[DAYS_OF_WEEK];
-    size_t endedRidesPerDay[DAYS_OF_WEEK];
-    size_t stationCount;
+    size_t stationCount, startedRidesPerDay[DAYS_OF_WEEK], endedRidesPerDay[DAYS_OF_WEEK];
 } cityCDT;
 
 
@@ -53,9 +47,8 @@ typedef struct cityCDT{
 con los indices ordenados (para las funciones getIndexByRank y getIndexByAlph)*/
 typedef struct index{
     char * name;
-    size_t totalRides;
-    int index;
     struct index * next;
+    size_t totalRides, index;
 }tIndex;
 
 
