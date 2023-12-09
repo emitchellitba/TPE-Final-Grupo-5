@@ -10,7 +10,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 100
 #define SIZE_NUM 10
-#define SIZE_DATE 16
+#define SIZE_DATE 20
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -107,12 +107,16 @@ int main(int argc, char * argv[]){
     fclose(stationsCsv);
 
     if((status = query1(nyc)) != OK)
+        freeCity(nyc);
         return status;
     if((status = query2(nyc)) != OK)
+        freeCity(nyc);
         return status;
     if((status = query3(nyc)) != OK)
+        freeCity(nyc);
         return status;
     if((status = query4(nyc, startYear, endYear)) != OK)
+        freeCity(nyc);
         return status;
     freeCity(nyc);
 
