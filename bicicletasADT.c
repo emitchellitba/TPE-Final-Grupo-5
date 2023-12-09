@@ -348,7 +348,7 @@ int getIndexByRank(cityADT city, int indexVec[]){
 static
 tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
-        return newNode(actual, name, NULL, index);
+        return newNode(actual, name, 0, index);
     }else{
         actual->next = addIndexAlphRec(actual->next, name, index);
         return actual;

@@ -52,7 +52,7 @@ int main(int argc, char * argv[]){
 
     cityADT nyc = newCity();
     if(nyc == NULL) {
-        puts("Cant allocate city");
+        puts("Can't allocate city");
         perror("Error");
         return NO_MEMORY;
     }
@@ -76,7 +76,7 @@ int main(int argc, char * argv[]){
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
             if(addStation(nyc, name, stationId) == ENOMEM) {
-                puts("Cant allocate Station");
+                puts("Can't allocate Station");
                 perror("Error");
                 return NO_MEMORY;
             }
