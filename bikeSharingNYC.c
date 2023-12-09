@@ -12,7 +12,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 100
 #define SIZE_NUM 10
-#define SIZE_DATE 20
+#define SIZE_DATE 17
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -48,7 +48,7 @@ int main(int argc, char * argv[]){
 
     cityADT nyc = newCity();
     if(nyc == NULL) {
-        puts("Cant allocate city");
+        puts("Can't allocate city");
         perror("Error");
         return NO_MEMORY;
     }
@@ -71,7 +71,7 @@ int main(int argc, char * argv[]){
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
             if(addStation(nyc, name, stationId) == ENOMEM) {
-                puts("Cant allocate Station");
+                puts("Can't allocate Station");
                 perror("Error");
                 return NO_MEMORY;
             }
