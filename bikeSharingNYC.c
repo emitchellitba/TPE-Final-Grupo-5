@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "cTable\htmlTable.h"
+#include "htmlTable.h"
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
 enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CANT_CREATE_FILE, CANT_CREATE_TABLE};
@@ -14,14 +14,15 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
-void query1(cityADT city);
-void query2(cityADT city);
-void query3(cityADT city);
-void query4(cityADT city, int startYear, int endYear);
+int query1(cityADT city);
+int query2(cityADT city);
+int query3(cityADT city);
+int query4(cityADT city, int startYear, int endYear);
 
 
 int main(int argc, char * argv[]){
     errno = 0;
+    int status = OK;
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
@@ -105,14 +106,17 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    query1(nyc);
-    query2(nyc);
-    query3(nyc);
-    query4(nyc, startYear, endYear);
-
+    if((status = query1(nyc)) != OK)
+        return status;
+    if((status = query2(nyc)) != OK)
+        return status;
+    if((status = query3(nyc)) != OK)
+        return status;
+    if((status = query4(nyc, startYear, endYear)) != OK)
+        return status;
     freeCity(nyc);
 
-    return OK;
+    return status;
 }
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
@@ -130,7 +134,7 @@ void readDate(char * s, struct tm * date) {
     sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
 
-void query1(cityADT city){
+int query1(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
@@ -171,9 +175,11 @@ void query1(cityADT city){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query2(cityADT city){
+int query2(cityADT city){
 
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
@@ -214,9 +220,11 @@ void query2(cityADT city){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query3(cityADT city) {
+int query3(cityADT city) {
     FILE * file;
     file = fopen("query3.csv", "w+");
 
@@ -247,9 +255,11 @@ void query3(cityADT city) {
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query4(cityADT city, int startYear, int endYear){
+int query4(cityADT city, int startYear, int endYear){
 
     size_t cantStations = getStationCount(city);
     int indexVec[cantStations];
@@ -290,4 +300,6 @@ void query4(cityADT city, int startYear, int endYear){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }

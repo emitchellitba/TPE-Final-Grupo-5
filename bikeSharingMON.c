@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
-#include "cTable\htmlTable.h"
+#include "htmlTable.h"
 #include <stdbool.h>
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
@@ -16,13 +16,14 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
-void query1(cityADT city);
-void query2(cityADT city);
-void query3(cityADT city);
-void query4(cityADT city, int startYear, int endYear);
+int query1(cityADT city);
+int query2(cityADT city);
+int query3(cityADT city);
+int query4(cityADT city, int startYear, int endYear);
 
 int main(int argc, char * argv[]){
     errno = 0;
+    int status = OK;
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
@@ -103,22 +104,28 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    query1(montreal);
-    query2(montreal);
-    query3(montreal);
-    query4(montreal, startYear, endYear);
+    if((status = query1(montreal)) != OK)
+        return status;
+    if((status = query2(montreal)) != OK)
+        return status;
+    if((status = query3(montreal)) != OK)
+        return status;
+    if((status = query4(montreal, startYear, endYear)) != OK)
+        return status;
 
     freeCity(montreal);
-    return 0;
+
+    return status;
 }
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
+
     if(endYear < 0 || startYear < 0) return 0;
     if(startYear != 0 && endYear != 0){
         if(endYear < startYear) return 0;
     }
-    if(strcmp(bikes, "biketest.txt") != 0) return 0;
-    if(strcmp(stations,"stationtest.txt") != 0) return 0;
+    if(strcmp(bikes, "bikesmontreal.csv") != 0) return 0;
+    if(strcmp(stations,"stationsmontreal.csv") != 0) return 0;
     return 1;
 }
 
@@ -126,7 +133,7 @@ void readDate(char * s, struct tm * date) {
     sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
 
-void query1(cityADT city){
+int query1(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
@@ -145,8 +152,8 @@ void query1(cityADT city){
     }
 
     htmlTable table = newTable("query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips");
-
-    if(table == NULL) {
+    
+    if(table == NULL || errno == ENOMEM) {
         puts("Cant create file 'query1.html'");
         perror("Error");
         return CANT_CREATE_TABLE;
@@ -167,9 +174,11 @@ void query1(cityADT city){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query2(cityADT city){
+int query2(cityADT city){
 
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
@@ -180,7 +189,6 @@ void query2(cityADT city){
     }
 
     FILE * file = fopen("query2.csv", "w+");
-
     if(file == NULL) {
         puts("Cant create file 'query2.csv'");
         perror("Error");
@@ -190,11 +198,11 @@ void query2(cityADT city){
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
     
     if(table == NULL) {
-        puts("Cant create file 'query2.html'");
+        puts("Cant create file 'query3.html'");
         perror("Error");
         return CANT_CREATE_TABLE;
     }
-
+    
     char datestr[SIZE_DATE];    
 
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
@@ -211,16 +219,18 @@ void query2(cityADT city){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query3(cityADT city) {
+int query3(cityADT city) {
     FILE * file;
     file = fopen("query3.csv", "w+");
 
     if(file == NULL) {
-        puts("Cant create file 'quer3.csv'");
+        puts("Cant create file 'query3.csv'");
         perror("Error");
-        return CANT_CREATE_TABLE;
+        return CANT_CREATE_FILE;
     }
 
     char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
@@ -231,7 +241,7 @@ void query3(cityADT city) {
         perror("Error");
         return CANT_CREATE_TABLE;
     }
-
+    
     char numstr1[SIZE_NUM], numstr2[SIZE_NUM];
 
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
@@ -244,9 +254,11 @@ void query3(cityADT city) {
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
 
-void query4(cityADT city, int startYear, int endYear){
+int query4(cityADT city, int startYear, int endYear){
 
     size_t cantStations = getStationCount(city);
     int indexVec[cantStations];
@@ -258,8 +270,21 @@ void query4(cityADT city, int startYear, int endYear){
 
     FILE * file = fopen("query4.csv", "w+");
 
+    if(file == NULL) {
+        puts("Cant create file 'query4.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
+
     fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
     htmlTable table = newTable("query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips");
+
+    if(table == NULL) {
+        puts("Cant create file 'query4.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
+
     char numstr[SIZE_NUM];
 
     for (int i = 0; i < cantStations; ++i) {
@@ -274,4 +299,6 @@ void query4(cityADT city, int startYear, int endYear){
     }
     closeHTMLTable(table);
     fclose(file);
+
+    return OK;
 }
