@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
-#include "cTable/htmlTable.h"
+#include "htmlTable.h"
 #include <stdbool.h>
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
@@ -12,7 +12,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
-#define SIZE_DATE 17
+#define SIZE_DATE 20
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -24,12 +24,9 @@ int query4(cityADT city, int startYear, int endYear);
 int main(int argc, char * argv[]){
     errno = 0;
     int status = OK;
-
-    /* Si no se pasan años como parametro, permanecen iguales a 0 */
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
-    /* Se chequea que se pasen dos (sin años), tres (solo con año de inicio) o cuatro (con ambos años) argumentos */
     if(argc < 3 || argc > 5) {
         puts("Invalid amount of arguments");
         return CANT_ARG_ERROR;
@@ -43,7 +40,6 @@ int main(int argc, char * argv[]){
             }
         }
     }
-    /* Se chequea que los parametros sean los esperados */
     if(!checkParams(bikes, stations, startYear, endYear)) {
         puts("Invalid arguments");
         return INVALID_ARG;
@@ -51,7 +47,7 @@ int main(int argc, char * argv[]){
 
     cityADT montreal = newCity();
     if(montreal == NULL) {
-        puts("Can't allocate city");
+        puts("Cant allocate city");
         perror("Error");
         return NO_MEMORY;
     }
@@ -61,28 +57,27 @@ int main(int argc, char * argv[]){
 
     char aux[MAX_TOKENS];
     bool first = 1;
-    
-    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
+
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
         unsigned long stationId;
 
-        if(first) {
+       if(first) {
             first = 0;
         } else {
             stationId = atoi(strtok(aux, ";"));
             name = strtok(NULL, ";");
             if(addStation(montreal, name, stationId) == ENOMEM) {
-                puts("Can't allocate station");
+                freeCity(montreal);
+                puts("Cant allocate station");
                 perror("Error");
                 return NO_MEMORY;
             }
-        }    
+        }
     }
-    
+
     accomodateStation(montreal);
-    
-    /* Se leen y almacenan los viajes, omitiendo la primera linea con el encabezado */
+
     first = 1;
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
         unsigned long startStationId, endStationId;
@@ -98,10 +93,11 @@ int main(int argc, char * argv[]){
             endStationId = atoi(strtok(NULL, ";"));
             isMember = atoi(strtok(NULL, "\n"));
             if(addRide(montreal, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
+                freeCity(montreal);
                 puts("Cant allocate destiny/ride");
                 perror("Error");
                 return NO_MEMORY;
-            }  
+            }
         }
     }
 
@@ -110,40 +106,38 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    if((status = query1(montreal)) != OK)
+    if((status = query1(montreal)) != OK) {
         freeCity(montreal);
         return status;
-    if((status = query2(montreal)) != OK)
+    }
+    if((status = query2(montreal)) != OK) {
         freeCity(montreal);
         return status;
-    if((status = query3(montreal)) != OK)
+    }
+    if((status = query3(montreal)) != OK) {
         freeCity(montreal);
         return status;
-    if((status = query4(montreal, startYear, endYear)) != OK)
+    }
+    if((status = query4(montreal, startYear, endYear)) != OK) {
         freeCity(montreal);
         return status;
+    }
 
     freeCity(montreal);
-
     return status;
 }
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
-    if(endYear < 0 || startYear < 0) 
-        return 0;
+    if(endYear < 0 || startYear < 0) return 0;
     if(startYear != 0 && endYear != 0){
-        if(endYear < startYear) 
-            return 0;
+        if(endYear < startYear) return 0;
     }
-    if(strcmp(bikes, "bikesMON.csv") != 0) 
-        return 0;
-    if(strcmp(stations,"stationsMON.csv") != 0) 
-        return 0;
+    if(strcmp(bikes, "bikesMON.csv") != 0) return 0;
+    if(strcmp(stations,"stationsMON.csv") != 0) return 0;
     return 1;
 }
 
-/* Genera un string a partir de una fecha en struct tm */
 void readDate(char * s, struct tm * date) {
     sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
 }
@@ -167,7 +161,7 @@ int query1(cityADT city){
     }
 
     htmlTable table = newTable("query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips");
-    
+
     if(table == NULL || errno == ENOMEM) {
         puts("Cant create file 'query1.html'");
         perror("Error");
@@ -211,25 +205,23 @@ int query2(cityADT city){
     }
 
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
-    
+
     if(table == NULL) {
         puts("Cant create file 'query3.html'");
         perror("Error");
         return CANT_CREATE_TABLE;
     }
-    
-    char datestr[SIZE_DATE];    
+
+    char datestr[SIZE_DATE];
 
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
     for (int i = 0; i < cantStations; ++i) {
         char * nameStart, * nameEnd;
         struct tm oldestTime;
         getOldest(city, indexVec[i], &nameStart, &nameEnd, &oldestTime);
-
-        /* Solo se imprime si la estacion tiene viajes que no sean circulares */
         if(nameEnd != NULL){
             fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
-               oldestTime.tm_hour, oldestTime.tm_min);
+                    oldestTime.tm_hour, oldestTime.tm_min);
             sprintf(datestr, "%d/%d/%d %d:%d", oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year, oldestTime.tm_hour, oldestTime.tm_min);
             addHTMLRow(table, nameStart, nameEnd, datestr);
         }
@@ -252,13 +244,13 @@ int query3(cityADT city) {
 
     char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips");
-    
+
     if(table == NULL) {
         puts("Cant create file 'query3.html'");
         perror("Error");
         return CANT_CREATE_TABLE;
     }
-    
+
     char numstr1[SIZE_NUM], numstr2[SIZE_NUM];
 
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
@@ -309,7 +301,6 @@ int query4(cityADT city, int startYear, int endYear){
         size_t cantRides;
         getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
         sprintf(numstr, "%ld", cantRides);
-        /* Solo se imprime si la estacion tiene viajes */
         if(endName != NULL) {
             fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
             addHTMLRow(table, startName, endName, numstr);
