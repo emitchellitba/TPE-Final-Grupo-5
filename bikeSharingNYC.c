@@ -5,9 +5,10 @@
 #include <time.h>
 #include "cTable\htmlTable.h"
 
+enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
+enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CANT_CREATE_FILE, CANT_CREATE_TABLE};
+
 #define MAX_TOKENS 100
-#define PARAM_ERROR -1
-#define MAX_TEXT 50
 #define SIZE_NUM 10
 #define SIZE_DATE 16
 
@@ -20,35 +21,41 @@ void query4(cityADT city, int startYear, int endYear);
 
 
 int main(int argc, char * argv[]){
-
+    errno = 0;
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
     if(argc < 3 || argc > 5) {
-        printf("Cantidad invalida de parametros.\n");
-        return PARAM_ERROR;
+        puts("Invalid amount of arguments");
+        return CANT_ARG_ERROR;
     } else {
-        bikes = argv[1];
-        stations = argv[2];
+        bikes = argv[BIKES_FILES];
+        stations = argv[STATIONS_FILES];
         if(argc > 3) {
-            startYear = atoi(argv[3]);
+            startYear = atoi(argv[START_YEAR]);
             if(argc == 5) {
-                endYear = atoi(argv[4]);
+                endYear = atoi(argv[END_YEAR]);
             }
         }
     }
     if(!checkParams(bikes, stations, startYear, endYear)) {
-        printf("Error en los parametros\n");
-        return PARAM_ERROR;
+        puts("Invalid arguments");
+        return INVALID_ARG;
     }
 
-   cityADT nyc = newCity();
+    cityADT nyc = newCity();
+    if(nyc == NULL) {
+        puts("Cant allocate city");
+        perror("Error");
+        return NO_MEMORY;
+    }
 
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
     char aux[MAX_TOKENS];
     int first = 1;
+    
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
         unsigned long stationId;
@@ -60,7 +67,11 @@ int main(int argc, char * argv[]){
             for(int i = 0; i < 2; i++)
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
-            addStation(nyc, name, stationId);
+            if(addStation(nyc, name, stationId) == ENOMEM) {
+                puts("Cant allocate Station");
+                perror("Error");
+                return NO_MEMORY;
+            }
         }
     }
     
@@ -81,7 +92,11 @@ int main(int argc, char * argv[]){
             endStationId = atoi(strtok(NULL, ";"));
             strtok(NULL, ";"); //ignoramos rideable
             memberState = strtok(NULL, "\n");
-            addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0);
+            if(addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0) == ENOMEM) {
+                puts("Cant allocate destiny/ride");
+                perror("Error");
+                return NO_MEMORY;
+            }
         }
     }
 
@@ -97,7 +112,7 @@ int main(int argc, char * argv[]){
 
     freeCity(nyc);
 
-    return 0;
+    return OK;
 }
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
@@ -119,11 +134,27 @@ void query1(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
-    getIndexByRank(city, indexVec);
+    if(getIndexByRank(city, indexVec) == ENOMEM) {
+        perror("Error");
+        return NO_MEMORY;
+    }
 
     FILE * file;
     file = fopen("query1.csv", "w+");
+
+    if(file == NULL) {
+        puts("Cant create file 'query1.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
+
     htmlTable table = newTable("query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips");
+    
+    if(table == NULL || errno == ENOMEM) {
+        puts("Cant create file 'query1.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
 
     fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
     char memstr[SIZE_NUM], casstr[SIZE_NUM], allnum[SIZE_NUM];
@@ -147,11 +178,26 @@ void query2(cityADT city){
     int cantStations = getStationCount(city);
     int indexVec[cantStations];
 
-    getIndexByAlph(city, indexVec);
+    if(getIndexByAlph(city, indexVec) == ENOMEM) {
+        perror("Error");
+        return NO_MEMORY;
+    }
 
     FILE * file = fopen("query2.csv", "w+");
+    if(file == NULL) {
+        puts("Cant create file 'query2.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
 
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
+    
+    if(table == NULL) {
+        puts("Cant create file 'query3.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
+    
     char datestr[SIZE_DATE];    
 
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
@@ -174,8 +220,21 @@ void query3(cityADT city) {
     FILE * file;
     file = fopen("query3.csv", "w+");
 
+    if(file == NULL) {
+        puts("Cant create file 'query3.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
+
     char * weekVec[7] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips");
+    
+    if(table == NULL) {
+        puts("Cant create file 'query3.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
+    
     char numstr1[SIZE_NUM], numstr2[SIZE_NUM];
 
     fprintf(file, "weekDay;startedTrips;endedTrips\n");
@@ -195,12 +254,28 @@ void query4(cityADT city, int startYear, int endYear){
     size_t cantStations = getStationCount(city);
     int indexVec[cantStations];
 
-    getIndexByAlph(city, indexVec);
+    if(getIndexByAlph(city, indexVec) == ENOMEM) {
+        perror("Error");
+        return NO_MEMORY;
+    }
 
     FILE * file = fopen("query4.csv", "w+");
 
+    if(file == NULL) {
+        puts("Cant create file 'query4.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
+
     fprintf(file, "bikeStation;mostPopRouteEndStation;mostPopRouteTrips\n");
     htmlTable table = newTable("query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips");
+
+    if(table == NULL) {
+        puts("Cant create file 'query4.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
+
     char numstr[SIZE_NUM];
 
     for (int i = 0; i < cantStations; ++i) {

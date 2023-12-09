@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
@@ -68,7 +69,6 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
-    errno = 0;
     int esta = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
@@ -128,7 +128,6 @@ static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date, int * errno){
     int cmp;
     if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
-        errno = 0;
         tRide * new = malloc(sizeof(tRide));          
         if(new == NULL || errno == ENOMEM) {
             return ride; 
@@ -144,7 +143,6 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date, int *
 
 
 int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
-    errno = 0;
     tStation * station;
     size_t i;
     char * endName;
@@ -329,7 +327,6 @@ de las estacion para realizar las comparaciones correspondientes, y tambien el i
 Luego pasamos esa lista a un vector y la retornamos. */
 
 int getIndexByRank(cityADT city, int indexVec[]){
-    errno = 0;
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
         lista = addIndexRankRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i, &errno);
@@ -351,7 +348,6 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index, int * errno){
 
 /*Idem getIndexByRank pero con orden aflabetico*/
 int getIndexByAlph(cityADT city, int indexVec[]){
-    errno = 0;
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
         lista = addIndexAlphRec(lista, city->stations[i].name, i, &errno);
