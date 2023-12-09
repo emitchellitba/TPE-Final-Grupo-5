@@ -165,9 +165,6 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
                 foundDestiny = 1;
             }
         }
-        
-        /* CONSULTA --------> No seria mas legible si modularizamos el agregado del destino? O tendria q quedar asi/es inecesario?
-        cpz que lo mismo al guardar el viaje mas viejo */
 
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
@@ -250,7 +247,6 @@ void freeCity(cityADT city){
     free(city);
 }
 
-// FUNCIONES QUERY 1
 
 void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
     rides[0] = city->stations[index].memberRides;
@@ -264,6 +260,7 @@ int getStationCount(cityADT city){
 char * nameByStationIndex(cityADT city, int index){
     return city->stations[index].name;
 }
+
 
 static
 void listToArray(tIndex * list, size_t size, int indexVec[]){
