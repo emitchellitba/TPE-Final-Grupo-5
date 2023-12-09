@@ -107,18 +107,22 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    if((status = query1(nyc)) != OK)
+    if((status = query1(nyc)) != OK) {
+       freeCity(nyc);
+        return status;
+    }
+    if((status = query2(nyc)) != OK) {
         freeCity(nyc);
         return status;
-    if((status = query2(nyc)) != OK)
+    }
+    if((status = query3(nyc)) != OK) {
         freeCity(nyc);
         return status;
-    if((status = query3(nyc)) != OK)
+    }
+    if((status = query4(nyc, startYear, endYear)) != OK) {
         freeCity(nyc);
         return status;
-    if((status = query4(nyc, startYear, endYear)) != OK)
-        freeCity(nyc);
-        return status;
+    }
     freeCity(nyc);
 
     return status;

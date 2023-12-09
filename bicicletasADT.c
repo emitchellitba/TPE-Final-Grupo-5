@@ -200,6 +200,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             if(aux == NULL || errno == ENOMEM) {
                 return errno;
             }
+            station->oldestDestinyName = aux;
             strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
         }
