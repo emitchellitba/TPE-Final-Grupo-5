@@ -7,7 +7,7 @@
 
 typedef struct cityCDT * cityADT;
 
-
+/* Reserva el espacio para una nueva ciudad, sin estaciones ni viajes */
 cityADT newCity(void);
 
 /* Agrega una estacion con los datos dados, vacia en viajes. Devuelve 1 si agrega, 0 si no */                         
@@ -25,24 +25,33 @@ void accomodateDestiny(cityADT city);
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);
 
-int getIndexByRank(cityADT city, int idexVec[]);
-
-char * nameByStationIndex(cityADT city, int idex);
-
-int getStationCount(cityADT city);
-
-void ridesByStationIndex(cityADT city,int idex, size_t rides[2]);
-
+/* Deja en indexVec los indices de las estaciones ordenados descendentemente segun cantidad de viajes (con desempate alfabetico) */
 int getIndexByRank(cityADT city, int indexVec[]);
 
+/* Retorna el nombre de la estacion con indice index */
+char * nameByStationIndex(cityADT city, int index);
+
+/* Retorna la cantidad de estaciones */
+int getStationCount(cityADT city);
+
+/* Deja en rides[0] la cantidad de memberRides y en rides[1] la cantidad de casualRides de la estacion de indice index */
+void ridesByStationIndex(cityADT city,int index, size_t rides[2]);
+
+/* Deja en indexVec los indices de las estaciones ordenados alfabeticamente */
 int getIndexByAlph(cityADT city, int indexVec[]);
 
+/* Retorna en variables de salida el nombre de la estacion de indice index, la fecha el viaje mas antiguo de la misma
+y el nombre del destino de ese viaje */
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime);
 
-size_t getStartedRides(cityADT city, int index);
+/* Retorna la cantidad de viajes que se inciaron en el dia indicado por dayOfWeek */
+size_t getStartedRides(cityADT city, int dayOfWeek);
 
-size_t getEndedRides(cityADT city, int index);
+/* Retorna la cantidad de viajes que se terminaron en el dia indicado por dayOfWeek */
+size_t getEndedRides(cityADT city, int dayOfWeek);
 
+/* Retorna en variables de salida el nombre y la cantidad de viajes del destino con mas viajes saliendo desde la estacion
+de indice stationIndex */
 void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear);
 
 

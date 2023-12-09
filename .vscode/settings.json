@@ -3,6 +3,7 @@
         "stdlib.h": "c",
         "string.h": "c",
         "stdio.h": "c",
-        "bicicletasadt.h": "c"
+        "bicicletasadt.h": "c",
+        "htmltable.h": "c"
     }
 }
