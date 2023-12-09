@@ -68,7 +68,7 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
-    int esta = 0;
+    bool esta = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
         if(city->stations[i].id == id)
