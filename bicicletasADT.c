@@ -170,6 +170,9 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             }
         }
         
+        /* CONSULTA --------> No seria mas legible si modularizamos el agregado del destino? O tendria q quedar asi/es inecesario?
+        cpz que lo mismo al guardar el viaje mas viejo */
+
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
