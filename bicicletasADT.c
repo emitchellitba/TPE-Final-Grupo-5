@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #define DAYS_OF_WEEK 7
 #define BLOCK 50
@@ -124,8 +125,7 @@ int dateCompare(struct tm d1, struct tm d2){
 se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    int cmp;
-    if(ride == NULL || (cmp = dateCompare(start_date, ride->start_date)) <= 0){
+    if(ride == NULL || dateCompare(start_date, ride->start_date)){
         tRide * new = malloc(sizeof(tRide));          
         // Si no hay espacio, no se agrega
         if(new == NULL || errno == ENOMEM)
@@ -145,8 +145,8 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     tStation * station;
     size_t i;
     char * endName;
-    int foundStart = 0;
-    int foundEnd = 0;
+    bool foundStart = 0;
+    bool foundEnd = 0;
 
     
     /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
@@ -161,10 +161,10 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         }
     }
     // Si ambas existen, agrego el viaje
-    if((foundStart && foundEnd)){
+    if(foundStart && foundEnd){
         
         // Si el destino ya existe dentro de la estacion de origen, lo agrego a esa lista
-        int foundDestiny = 0;
+        bool foundDestiny = 0;
         for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
             if(strcmp(station->destinies[i].name, endName) == 0){
                 station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date);
@@ -191,7 +191,6 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             }
             strcpy(station->destinies[i].name, endName); 
             station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
-            // FALTARIA CHEQUEAR LA DEVOLUCION DEL ADDRIDEREC
             station->destiniesCount++;
         }
         
