@@ -175,7 +175,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         // Si no, creo un destino nuevo e inicializo la lista
         if(!foundDestiny){
             if(i % BLOCK == 0){
-                tStation * aux = station->destinies;
+                tDestiny * aux = station->destinies;
                 aux = realloc(aux, (i + BLOCK) * sizeof(tDestiny));
                 if(aux == NULL || errno == ENOMEM) {
                     return errno;
@@ -348,7 +348,7 @@ int getIndexByRank(cityADT city, int indexVec[]){
 static
 tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
     if(actual == NULL || strcmp(actual->name, name) >= 0) {
-        return newNode(actual, name, NULL, index);
+        return newNode(actual, name, 0, index);
     }else{
         actual->next = addIndexAlphRec(actual->next, name, index);
         return actual;
