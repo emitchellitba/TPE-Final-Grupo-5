@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "htmlTable.h"
+#include "cTable/htmlTable.h"
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
 enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CANT_CREATE_FILE, CANT_CREATE_TABLE};
