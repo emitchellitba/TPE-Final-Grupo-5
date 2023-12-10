@@ -1,5 +1,5 @@
 COMPILER=gcc
-CFLAGS=-pedantic -std=c99 -Wall -fsanitize=address
+CFLAGS=-pedantic -std=c99 -Wall -fsanitize=address -g
 OUTPUT_FILE_NYC=bikeSharingNYC
 FRONT_NYC=bikeSharingNYC.c
 OUTPUT_FILE_MON=bikeSharingMON
