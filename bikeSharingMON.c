@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
-#include "htmlTable.h"
+#include "cTable/htmlTable.h"
 #include <stdbool.h>
 
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};

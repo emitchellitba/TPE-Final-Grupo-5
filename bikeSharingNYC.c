@@ -60,6 +60,11 @@ int main(int argc, char * argv[]){
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
 
+    if(bikesCsv == NULL || stationsCsv == NULL) {
+        puts("Cant open file");
+        return FILE_NOT_FOUND;
+    }
+
     char aux[MAX_TOKENS];
     bool first = 1;
     
@@ -76,6 +81,7 @@ int main(int argc, char * argv[]){
                 strtok(NULL, ";");                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
             if(addStation(nyc, name, stationId) == ENOMEM) {
+                freeCity(nyc);
                 puts("Can't allocate Station");
                 perror("Error");
                 return NO_MEMORY;
@@ -102,6 +108,7 @@ int main(int argc, char * argv[]){
             strtok(NULL, ";"); //ignoramos rideable
             memberState = strtok(NULL, "\n");
             if(addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0) == ENOMEM) {
+                freeCity(nyc);
                 puts("Cant allocate destiny/ride");
                 perror("Error");
                 return NO_MEMORY;
