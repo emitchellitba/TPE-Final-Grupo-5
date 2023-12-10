@@ -12,7 +12,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
-#define SIZE_DATE 20
+#define SIZE_DATE 18
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -20,6 +20,7 @@ int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
 int query4(cityADT city, int startYear, int endYear);
+
 
 int main(int argc, char * argv[]){
     errno = 0;

@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#define DAYS_OF_WEEK 7
+
 #define BLOCK 50
 
 
