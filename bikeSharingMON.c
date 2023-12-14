@@ -13,6 +13,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
 #define SIZE_DATE 18
+#define LONG_PUNYCOMA 2
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -62,6 +63,7 @@ int main(int argc, char * argv[]){
 
     char aux[MAX_TOKENS];
     bool first = 1;
+    char s[LONG_PUNYCOMA] = ";";
 
     /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
@@ -71,8 +73,8 @@ int main(int argc, char * argv[]){
        if(first) {
             first = 0;
         } else {
-            stationId = atoi(strtok(aux, ";"));
-            name = strtok(NULL, ";");
+            stationId = atoi(strtok(aux, s));
+            name = strtok(NULL, s);
             if(addStation(montreal, name, stationId) == ENOMEM) {
                 freeCity(montreal);
                 puts("Cant allocate station");
@@ -94,14 +96,14 @@ int main(int argc, char * argv[]){
         if(first) {
             first = 0;
         } else {
-            readDate(strtok(aux, ";"), &startDate);
-            startStationId = atoi(strtok(NULL, ";"));
-            readDate(strtok(NULL, ";"), &endDate);
-            endStationId = atoi(strtok(NULL, ";"));
+            readDate(strtok(aux, s), &startDate);
+            startStationId = atoi(strtok(NULL, s));
+            readDate(strtok(NULL, s), &endDate);
+            endStationId = atoi(strtok(NULL, s));
             isMember = atoi(strtok(NULL, "\n"));
             if(addRide(montreal, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
                 freeCity(montreal);
-                puts("Cant allocate destiny/ride");
+                puts("Can't allocate destiny/ride");
                 perror("Error");
                 return NO_MEMORY;
             }
@@ -136,12 +138,11 @@ int main(int argc, char * argv[]){
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
-    if(endYear < 0 || startYear < 0) return 0;
-    if(startYear != 0 && endYear != 0){
-        if(endYear < startYear) return 0;
-    }
-    if(strcmp(bikes, "bikesMON.csv") != 0) return 0;
-    if(strcmp(stations,"stationsMON.csv") != 0) return 0;
+    if(endYear < 0 || startYear < 0) 
+        return 0;
+    if(startYear != 0 && endYear != 0)
+        if(endYear < startYear) 
+            return 0;
     return 1;
 }
 

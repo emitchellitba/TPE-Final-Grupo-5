@@ -10,7 +10,6 @@
 
 #define BLOCK 50
 
-
 /* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
 información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
 Dentro de los vectores de destinos, se almacena su nombre y un puntero al primer elemento de una lista de los viajes realizados entre esas 
@@ -119,12 +118,11 @@ int dateCompare(struct tm d1, struct tm d2){
 se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    if(ride == NULL || dateCompare(start_date, ride->start_date)){
+    if(ride == NULL || dateCompare(start_date, ride->start_date)){ // tendria q ser !dateCompare(start_date, ride->start_date)?
         tRide * new = malloc(sizeof(tRide));          
         // Si no hay espacio, no se agrega
         if(new == NULL || errno == ENOMEM)
             return ride; 
-
         new->start_date = start_date;
         new->end_date = end_date;
         new->next = ride;
