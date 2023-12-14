@@ -37,8 +37,9 @@ typedef struct station{
 } tStation;
 
 typedef struct cityCDT{
-    tStation * stations;
+    tStation ** stations;
     size_t stationCount, startedRidesPerDay[DAYS_OF_WEEK], endedRidesPerDay[DAYS_OF_WEEK];
+    bool accomodated:1;
 } cityCDT;
 
 
