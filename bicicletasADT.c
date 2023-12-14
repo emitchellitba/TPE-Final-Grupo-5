@@ -64,7 +64,7 @@ int addStation(cityADT city, char * name, size_t id){
     bool esta = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !esta; i++){
-        if(city->stations[i].id == id)
+        if(city->stations[i]->id == id)
             esta = 1;
     }
     
@@ -79,16 +79,16 @@ int addStation(cityADT city, char * name, size_t id){
             city->stations = aux;
         }
         int len = strlen(name) + 1;
-        city->stations[i].name = malloc(len);
-        if(city->stations[i].name == NULL || errno == ENOMEM) {
+        city->stations[i]->name = malloc(len);
+        if(city->stations[i]->name == NULL || errno == ENOMEM) {
             return errno;
         }
-        strcpy(city->stations[i].name, name);
-        city->stations[i].id = id;
-        city->stations[i].destinies = NULL;
-        city->stations[i].destiniesCount = 0;
-        city->stations[i].memberRides = city->stations[i].casualRides = 0;
-        city->stations[i].oldestDestinyName = NULL;
+        strcpy(city->stations[i]->name, name);
+        city->stations[i]->id = id;
+        city->stations[i]->destinies = NULL;
+        city->stations[i]->destiniesCount = 0;
+        city->stations[i]->memberRides = city->stations[i]->casualRides = 0;
+        city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
     }
     return !esta;
@@ -144,12 +144,12 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     
     /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
     for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
-        if(city->stations[i].id == startStationId){
+        if(city->stations[i]->id == startStationId){
             station = &(city->stations[i]);
             foundStart = 1;
         }
-        if(city->stations[i].id == endStationId){
-            endName = city->stations[i].name;                       
+        if(city->stations[i]->id == endStationId){
+            endName = city->stations[i]->name;                       
             foundEnd = 1;
         }
     }
@@ -220,7 +220,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
 
 void accomodateDestiny(cityADT city) {
     for(size_t i = 0; i < city->stationCount; i++) {
-        city->stations[i].destinies = realloc(city->stations[i].destinies, sizeof(tDestiny) * (city->stations[i].destiniesCount));
+        city->stations[i]->destinies = realloc(city->stations[i]->destinies, sizeof(tDestiny) * (city->stations[i]->destiniesCount));
     }
 }
 
@@ -235,12 +235,12 @@ void freeRides(tRide * ride){
 
 void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
-        free(city->stations[i].name);
-        free(city->stations[i].oldestDestinyName);
-        for(int j = 0; j < city->stations[i].destiniesCount; j++){
-            free(city->stations[i].destinies[j].name);
-            freeRides(city->stations[i].destinies[j].rides);
-        }free(city->stations[i].destinies);
+        free(city->stations[i]->name);
+        free(city->stations[i]->oldestDestinyName);
+        for(int j = 0; j < city->stations[i]->destiniesCount; j++){
+            free(city->stations[i]->destinies[j].name);
+            freeRides(city->stations[i]->destinies[j].rides);
+        }free(city->stations[i]->destinies);
     }
     free(city->stations);
     free(city);
@@ -324,7 +324,7 @@ Luego pasamos esa lista a un vector y la retornamos. */
 int getIndexByRank(cityADT city, int indexVec[]){
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexRankRec(lista, city->stations[i].name, city->stations[i].casualRides + city->stations[i].memberRides, i);
+        lista = addIndexRankRec(lista, city->stations[i]->name, city->stations[i]->casualRides + city->stations[i]->memberRides, i);
     }
     listToArray(lista, city->stationCount, indexVec);
     freeList(lista);
@@ -345,7 +345,7 @@ tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
 int getIndexByAlph(cityADT city, int indexVec[]){
     tIndex * lista = NULL;
     for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexAlphRec(lista, city->stations[i].name, i);
+        lista = addIndexAlphRec(lista, city->stations[i]->name, i);
     }
     listToArray(lista, city->stationCount, indexVec);
     freeList(lista);
