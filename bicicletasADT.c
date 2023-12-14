@@ -248,8 +248,8 @@ void freeCity(cityADT city){
 
 
 void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
-    rides[0] = city->stations[index].memberRides;
-    rides[1] = city->stations[index].casualRides;
+    rides[0] = city->stations[index]->memberRides;
+    rides[1] = city->stations[index]->casualRides;
 }
 
 int getStationCount(cityADT city){
@@ -257,7 +257,7 @@ int getStationCount(cityADT city){
 }
 
 char * nameByStationIndex(cityADT city, int index){
-    return city->stations[index].name;
+    return city->stations[index]->name;
 }
 
 
@@ -354,13 +354,13 @@ int getIndexByAlph(cityADT city, int indexVec[]){
 
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
 
-    *nameStart = city->stations[index].name;
-    *nameEnd = city->stations[index].oldestDestinyName;
-    oldestTime->tm_mday = city->stations[index].oldest_date.tm_mday;
-    oldestTime->tm_mon = city->stations[index].oldest_date.tm_mon;
-    oldestTime->tm_year = city->stations[index].oldest_date.tm_year;
-    oldestTime->tm_hour = city->stations[index].oldest_date.tm_hour;
-    oldestTime->tm_min = city->stations[index].oldest_date.tm_min;
+    *nameStart = city->stations[index]->name;
+    *nameEnd = city->stations[index]->oldestDestinyName;
+    oldestTime->tm_mday = city->stations[index]->oldest_date.tm_mday;
+    oldestTime->tm_mon = city->stations[index]->oldest_date.tm_mon;
+    oldestTime->tm_year = city->stations[index]->oldest_date.tm_year;
+    oldestTime->tm_hour = city->stations[index]->oldest_date.tm_hour;
+    oldestTime->tm_min = city->stations[index]->oldest_date.tm_min;
 }
 
 size_t getStartedRides(cityADT city, int index) {
@@ -383,8 +383,8 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 
 /*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
 void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
-    if(city->stations[stationIndex].destiniesCount > 0){
-        tStation station = city->stations[stationIndex];
+    if(city->stations[stationIndex]->destiniesCount > 0){
+        tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
         /*Se setean las variables con los valores del primer destino*/
         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
         char * maxName = station.destinies[0].name;
