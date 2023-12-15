@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -284,11 +285,31 @@ void freeCity(cityADT city){
 }
 
 
+
 int getStationCount(cityADT city){
     return city->stationCount;
 }
 
 
+int compareTotalRides(tStation * station1, tStation * station2){
+    size_t total1, total2;
+    if((total1 = station1->casualRides + station1->memberRides) == (total2 = station2->casualRides + station2->memberRides)){
+        return strcasecmp(station1->name, station2->name);
+    }
+    return total1 - total2;
+}
+
+void orderByRides(cityADT city){
+    qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
+}
+
+int compareAlph(tStation * station1, tStation * station2){
+    return strcasecmp(station1->name, station2->name); 
+}
+
+void orderByAlph(cityADT city){
+    qsort(city->stations, city->stationCount, sizeof(tStation *), compareAlph);
+}
 
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
     *nameStart = city->stations[index]->name;
@@ -300,6 +321,7 @@ void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, stru
     oldestTime->tm_min = city->stations[index]->oldest_date.tm_min;
 }
 
+
 size_t getStartedRides(cityADT city, int index) {
     return city->startedRidesPerDay[index];
 }
@@ -307,6 +329,7 @@ size_t getStartedRides(cityADT city, int index) {
 size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
+
 
 /*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
 static
@@ -318,7 +341,40 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
-static int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
+
+/*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
+// void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
+//     if(city->stations[stationIndex]->destiniesCount > 0){
+//         tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
+//         /*Se setean las variables con los valores del primer destino*/
+//         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
+//         char * maxName = station.destinies[0].name;
+      
+//         /*Se recorren todos los destinos y se compara con el máximo registrado*/
+//         for (int i = 1; i < station.destiniesCount; ++i) {
+//             size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
+//             if(rides > maxRides) {
+//                 maxRides = rides;
+//                 maxName = station.destinies[i].name;
+//             }else if(rides == maxRides){
+//                 if(strcasecmp(maxName, station.destinies[i].name) > 0){
+//                     maxRides = rides;
+//                     maxName = station.destinies[i].name;
+//                 }
+//             }
+//         }
+//         *ridesOut = maxRides;
+//         *endName = maxName;
+//     }else{
+//         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
+//         *ridesOut = 0;
+//         *endName = NULL;
+//     }
+// }
+
+
+static 
+int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
 
     if(ride == NULL || ride->start_date.tm_year > endYear || (ride->start_date.tm_year == endYear && ride->start_date.tm_mon > month))
         return 0;
@@ -343,19 +399,19 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         char * aux = city->stations[i]->name;
 
         if(cantAux > 0){
-            if(cantAux > cantTop1 || (cantAux == cantTop1 && strcmp(top1, aux) > 0)){
+            if(cantAux > cantTop1 || (cantAux == cantTop1 && strcasecmp(top1, aux) > 0)){
                 cantTop3 = cantTop2;
                 cantTop2 = cantTop1;
                 cantTop1 = cantAux;
                 top3 = top2;
                 top2 = top1;
                 top1 = aux;
-            }else if(cantAux > cantTop2 || (cantAux == cantTop2 && strcmp(top2, aux) > 0)){
+            }else if(cantAux > cantTop2 || (cantAux == cantTop2 && strcasecmp(top2, aux) > 0)){
                 cantTop3 = cantTop2;
                 cantTop2 = cantAux;
                 top3 = top2;
                 top2 = aux;
-            }else if(cantAux >= cantTop3 || (cantAux == cantTop3 && strcmp(top3, aux) > 0)){
+            }else if(cantAux >= cantTop3 || (cantAux == cantTop3 && strcasecmp(top3, aux) > 0)){
                 cantTop3 = cantAux;
                 top3 = aux;
             }
@@ -374,34 +430,3 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     }
 
 }
-
-
-/*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
-// void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
-//     if(city->stations[stationIndex]->destiniesCount > 0){
-//         tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
-//         /*Se setean las variables con los valores del primer destino*/
-//         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
-//         char * maxName = station.destinies[0].name;
-      
-//         /*Se recorren todos los destinos y se compara con el máximo registrado*/
-//         for (int i = 1; i < station.destiniesCount; ++i) {
-//             size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
-//             if(rides > maxRides) {
-//                 maxRides = rides;
-//                 maxName = station.destinies[i].name;
-//             }else if(rides == maxRides){
-//                 if(strcmp(maxName, station.destinies[i].name) > 0){
-//                     maxRides = rides;
-//                     maxName = station.destinies[i].name;
-//                 }
-//             }
-//         }
-//         *ridesOut = maxRides;
-//         *endName = maxName;
-//     }else{
-//         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
-//         *ridesOut = 0;
-//         *endName = NULL;
-//     }
-// }
