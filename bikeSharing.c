@@ -67,56 +67,56 @@ int main(int argc, char * argv[]){
         return INVALID_ARG;
     }
 
-    cityADT montreal = newCity();
-    if(montreal == NULL) {
+    cityADT city = newCity();
+    if(city == NULL) {
         perror("Error. Cant allocate city");
         return NO_MEMORY;
     }
 
     /*Agrego las estaciones, si hay un error se libera la ciudad y retorna error*/
-    if(MON && (status = addStationsMon(montreal, stationsCsv)) != OK) {
-        freeCity(montreal);
+    if(MON && (status = addStationsMon(city, stationsCsv)) != OK) {
+        freeCity(city);
         return status;
     }
 
-    if(NYC && (status = addStationsNyc(montreal, stationsCsv)) != OK) {
-        freeCity(montreal);
+    if(NYC && (status = addStationsNyc(city, stationsCsv)) != OK) {
+        freeCity(city);
         return status;
     }
 
 
     /*Agrego los viajes, si hay un error se libera la ciudad y retorna error*/
-    if(MON && (status = addBikesMon(montreal, bikesCsv)) != OK) {
-        freeCity(montreal);
+    if(MON && (status = addBikesMon(city, bikesCsv)) != OK) {
+        freeCity(city);
         return status;
     }
 
-    if(NYC && (status = addBikesNyc(montreal, bikesCsv)) != OK) {
-        freeCity(montreal);
+    if(NYC && (status = addBikesNyc(city, bikesCsv)) != OK) {
+        freeCity(city);
         return status;
     }
 
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    if((status = query1(montreal)) != OK) {
-        freeCity(montreal);
+    if((status = query1(city)) != OK) {
+        freeCity(city);
         return status;
     }
-    if((status = query2(montreal)) != OK) {
-        freeCity(montreal);
+    if((status = query2(city)) != OK) {
+        freeCity(city);
         return status;
     }
-    if((status = query3(montreal)) != OK) {
-        freeCity(montreal);
+    if((status = query3(city)) != OK) {
+        freeCity(city);
         return status;
     }
-    if((status = query4(montreal, startYear, endYear)) != OK) {
-        freeCity(montreal);
+    if((status = query4(city, startYear, endYear)) != OK) {
+        freeCity(city);
         return status;
     }
 
-    freeCity(montreal);
+    freeCity(city);
     return status;
 }
 
@@ -129,7 +129,7 @@ int addStationsMon(cityADT city, FILE * stationsCsv){
         char * name;
         unsigned long stationId;
 
-        stationId = atoi(strtok(aux, s));
+        stationId = atoi(strtok(aux, END_OF_TOKEN));
         name = strtok(NULL, END_OF_TOKEN);
             if(addStation(city, name, stationId) == ENOMEM) {
                 freeCity(city);
@@ -344,7 +344,6 @@ int query4(cityADT city, int startYear, int endYear){
 int addStationsNyc(cityADT city, FILE * stationsCsv){
 
     char aux[MAX_TOKENS];
-    char s[LONG_PUNYCOMA] = ";";
 
     /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
@@ -368,7 +367,6 @@ int addStationsNyc(cityADT city, FILE * stationsCsv){
 int addBikesMon(cityADT city, FILE * bikesCsv){
 
     char aux[MAX_TOKENS];
-    char s[LONG_PUNYCOMA] = ";";
     unsigned long startStationId, endStationId;
     struct tm startDate, endDate;
     int isMember;
@@ -376,10 +374,10 @@ int addBikesMon(cityADT city, FILE * bikesCsv){
     /* Se leen y almacenan los viajes*/
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
 
-        readDate(strtok(aux, s), &startDate);
-        startStationId = atoi(strtok(NULL, s));
-        readDate(strtok(NULL, s), &endDate);
-        endStationId = atoi(strtok(NULL, s));
+        readDate(strtok(aux, END_OF_TOKEN), &startDate);
+        startStationId = atoi(strtok(NULL, END_OF_TOKEN));
+        readDate(strtok(NULL, END_OF_TOKEN), &endDate);
+        endStationId = atoi(strtok(NULL, END_OF_TOKEN));
         isMember = atoi(strtok(NULL, "\n"));
         if (addRide(city, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
             freeCity(city);
@@ -392,7 +390,8 @@ int addBikesMon(cityADT city, FILE * bikesCsv){
 }
 
 int addBikesNyc(cityADT city, FILE * bikesCsv){
-
+    
+    char aux[MAX_TOKENS];
     unsigned long startStationId, endStationId;
     struct tm startDate, endDate;
     char * memberState;
