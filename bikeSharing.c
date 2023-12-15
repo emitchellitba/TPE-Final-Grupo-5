@@ -47,7 +47,7 @@ int main(int argc, char * argv[]){
         if(status == INVALID_ARG) 
             fprintf(stderr, "Invalid arguments");
         if(status == CANT_ARG_ERROR)
-            fprintf(stderr, "Invalid amount of arguments")
+            fprintf(stderr, "Invalid amount of arguments");
     }
 
     cityADT city = newCity();
@@ -134,10 +134,10 @@ int addBikesMON(cityADT city, FILE * bikesCsv){
     /* Se leen y almacenan los viajes*/
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
 
-        readDate(strtok(aux, s), &startDate);
-        startStationId = atoi(strtok(NULL, s));
-        readDate(strtok(NULL, s), &endDate);
-        endStationId = atoi(strtok(NULL, s));
+        readDate(strtok(aux, END_OF_TOKEN), &startDate);
+        startStationId = atoi(strtok(NULL, END_OF_TOKEN));
+        readDate(strtok(NULL, END_OF_TOKEN), &endDate);
+        endStationId = atoi(strtok(NULL, END_OF_TOKEN));
         isMember = atoi(strtok(NULL, "\n"));
         if (addRide(city, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
             perror("Error. Can't allocate destiny/ride");
@@ -373,7 +373,7 @@ int query5(cityADT city, int startYear, int endYear){
 
     char * first, *second, *third;
         for (int j = 0; j < MONTHS; ++j) {
-            getTop3ByMonth(j, &first, &second, &third, startYear, endYear);
+            getTop3ByMonth(city, j, &first, &second, &third, startYear, endYear);
             fprintf(file, "%s;%s;%s;%s", months[j], first, second, third);
             addHTMLRow(table, months[j], first, second, third);
         }
