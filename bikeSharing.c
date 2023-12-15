@@ -84,12 +84,9 @@ int main(int argc, char * argv[]){
         return status;
     }
 
-<<<<<<< Updated upstream
-    if(MON && (status = addBikesMon(montreal, bikesCsv)) != OK) {
-=======
+
     /*Agrego los viajes, si hay un error se libera la ciudad y retorna error*/
     if(MON && (status = addBikesMon(montreal, bikesCsv))) != OK) {
->>>>>>> Stashed changes
         freeCity(montreal);
         return status;
     }
