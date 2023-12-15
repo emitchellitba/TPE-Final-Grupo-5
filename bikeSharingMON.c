@@ -12,10 +12,15 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
-#define SIZE_DATE 18
 #define LONG_PUNYCOMA 2
+#define SIZE_DATE 18
+#define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual"
+#define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id"
+#define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
+#define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude"
 
-int checkParams(char* bikes, char*stations, int startYear, int endYear);
+
+int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
 int query1(cityADT city);
 int query2(cityADT city);
@@ -45,8 +50,11 @@ int main(int argc, char * argv[]){
             }
         }
     }
+
+    FILE * bikesCsv = fopen(bikes, "r");
+    FILE * stationsCsv = fopen(stations, "r");
     /* Se chequea que los parametros sean los esperados */
-    if(!checkParams(bikes, stations, startYear, endYear)) {
+    if(!checkParams(bikesCsv, stationsCsv, startYear, endYear)) {
         puts("Invalid arguments");
         return INVALID_ARG;
     }
@@ -58,8 +66,6 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
-    FILE * bikesCsv = fopen(bikes, "r");
-    FILE * stationsCsv = fopen(stations, "r");
 
     char aux[MAX_TOKENS];
     bool first = 1;
@@ -136,13 +142,25 @@ int main(int argc, char * argv[]){
     return status;
 }
 
-int checkParams(char* bikes, char*stations, int startYear, int endYear){
+int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
+
+    char aux[MAX_TOKENS];
+    fgets(aux, MAX_TOKENS, stations);
+    if(strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0)
+        return 0;
+
+    fgets(aux, MAX_TOKENS, bikes);
+    if(strcmp(aux, PRIMERA_LINEA_BIKES_MON) != 0)
+        return 0;
+
 
     if(endYear < 0 || startYear < 0) 
         return 0;
     if(startYear != 0 && endYear != 0)
         if(endYear < startYear) 
             return 0;
+
+
     return 1;
 }
 
