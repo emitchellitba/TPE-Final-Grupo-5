@@ -1,9 +1,8 @@
 COMPILER=gcc
 CFLAGS=-pedantic -std=c99 -Wall -fsanitize=address -g
 OUTPUT_FILE_NYC=bikeSharingNYC
-FRONT_NYC=bikeSharingNYC.c
 OUTPUT_FILE_MON=bikeSharingMON
-FRONT_MON=bikeSharingMON.c
+FRONT=bikeSharing.c
 
 
 all: makeExecutables clean
@@ -11,10 +10,10 @@ all: makeExecutables clean
 makeExecutables: back makeExecutableNYC makeExecutableMON
 
 makeExecutableNYC:
-	$(COMPILER) -o $(OUTPUT_FILE_NYC) $(FRONT_NYC) bicicletasADT.o htmlTable.o $(CFLAGS)
+	$(COMPILER) -o $(OUTPUT_FILE_NYC) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DMON=0 -DNYC=1
 
 makeExecutableMON:
-	$(COMPILER) -o $(OUTPUT_FILE_MON) $(FRONT_MON) bicicletasADT.o htmlTable.o $(CFLAGS)
+	$(COMPILER) -o $(OUTPUT_FILE_MON) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DMON=1 -DNYC=0
 
 back: bicicletasADT.o htmlTable.o
 
