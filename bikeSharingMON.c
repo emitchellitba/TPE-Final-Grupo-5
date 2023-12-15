@@ -12,15 +12,10 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
-#define LONG_PUNYCOMA 2
 #define SIZE_DATE 18
-#define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual"
-#define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id"
-#define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
-#define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude"
+#define END_OF_TOKEN ";"
 
-
-int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
+int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
 int query1(cityADT city);
 int query2(cityADT city);
@@ -36,7 +31,7 @@ int main(int argc, char * argv[]){
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
-    /* Se chequea que se pasen dos (sin años), tres (solo con año de inicio) o cuatro (con ambos años) argumentos */
+    /* Se chequea que se pasen dos(sin años), tres (solo con año de inicio) o cuatro (con ambos años) argumentos */
     if(argc < 3 || argc > 5) {
         puts("Invalid amount of arguments");
         return CANT_ARG_ERROR;
@@ -50,11 +45,8 @@ int main(int argc, char * argv[]){
             }
         }
     }
-
-    FILE * bikesCsv = fopen(bikes, "r");
-    FILE * stationsCsv = fopen(stations, "r");
     /* Se chequea que los parametros sean los esperados */
-    if(!checkParams(bikesCsv, stationsCsv, startYear, endYear)) {
+    if(!checkParams(bikes, stations, startYear, endYear)) {
         puts("Invalid arguments");
         return INVALID_ARG;
     }
@@ -66,10 +58,11 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
+    FILE * bikesCsv = fopen(bikes, "r");
+    FILE * stationsCsv = fopen(stations, "r");
 
     char aux[MAX_TOKENS];
     bool first = 1;
-    char s[LONG_PUNYCOMA] = ";";
 
     /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
@@ -79,8 +72,8 @@ int main(int argc, char * argv[]){
        if(first) {
             first = 0;
         } else {
-            stationId = atoi(strtok(aux, s));
-            name = strtok(NULL, s);
+            stationId = atoi(strtok(aux, END_OF_TOKEN));
+            name = strtok(NULL, END_OF_TOKEN);
             if(addStation(montreal, name, stationId) == ENOMEM) {
                 freeCity(montreal);
                 puts("Cant allocate station");
@@ -102,10 +95,10 @@ int main(int argc, char * argv[]){
         if(first) {
             first = 0;
         } else {
-            readDate(strtok(aux, s), &startDate);
-            startStationId = atoi(strtok(NULL, s));
-            readDate(strtok(NULL, s), &endDate);
-            endStationId = atoi(strtok(NULL, s));
+            readDate(strtok(aux, END_OF_TOKEN), &startDate);
+            startStationId = atoi(strtok(NULL, END_OF_TOKEN));
+            readDate(strtok(NULL, END_OF_TOKEN), &endDate);
+            endStationId = atoi(strtok(NULL, END_OF_TOKEN));
             isMember = atoi(strtok(NULL, "\n"));
             if(addRide(montreal, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
                 freeCity(montreal);
@@ -142,31 +135,13 @@ int main(int argc, char * argv[]){
     return status;
 }
 
-int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
-
-    char aux[MAX_TOKENS];
-    fgets(aux, MAX_TOKENS, stations);
-    if(MON && strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0)
-        return 0;
-
-    if(NYC && strcmp(aux, PRIMERA_LINEA_STATIONS_NYC) != 0)
-        return 0;
-
-    fgets(aux, MAX_TOKENS, bikes);
-    if(MON && strcmp(aux, PRIMERA_LINEA_BIKES_MON) != 0)
-        return 0;
-
-    if(NYC && strcmp(aux, PRIMERA_LINEA_BIKES_MON) != 0)
-        return 0;
-
+int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
     if(endYear < 0 || startYear < 0) 
         return 0;
     if(startYear != 0 && endYear != 0)
         if(endYear < startYear) 
             return 0;
-
-
     return 1;
 }
 
