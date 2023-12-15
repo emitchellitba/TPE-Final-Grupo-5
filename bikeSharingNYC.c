@@ -32,7 +32,7 @@ int main(int argc, char * argv[]){
 
     /* Se chequea que se pasen dos (sin años), tres (solo con año de inicio) o cuatro (con ambos años) argumentos */
     if(argc < 3 || argc > 5) {
-        puts("Invalid amount of arguments");
+        fprintf(stderr, "Invalid amount of arguments");
         return CANT_ARG_ERROR;
     } else {
         bikes = argv[BIKES_FILES];
@@ -46,14 +46,13 @@ int main(int argc, char * argv[]){
     }
     /* Se chequea que los parametros sean los esperados */
     if(!checkParams(bikes, stations, startYear, endYear)) {
-        puts("Invalid arguments");
+        fprintf(stderr, "Invalid arguments");
         return INVALID_ARG;
     }
 
     cityADT nyc = newCity();
     if(nyc == NULL) {
-        puts("Can't allocate city");
-        perror("Error");
+        perror("Error. Can't allocate city");
         return NO_MEMORY;
     }
 
@@ -61,7 +60,7 @@ int main(int argc, char * argv[]){
     FILE * stationsCsv = fopen(stations, "r");
 
     if(bikesCsv == NULL || stationsCsv == NULL) {
-        puts("Cant open file");
+        fprintf(stderr, "Cant open file");
         return FILE_NOT_FOUND;
     }
 
@@ -82,8 +81,7 @@ int main(int argc, char * argv[]){
             stationId = atoi(strtok(NULL, "\n"));
             if(addStation(nyc, name, stationId) == ENOMEM) {
                 freeCity(nyc);
-                puts("Can't allocate Station");
-                perror("Error");
+                perror("Error. Can't allocate Station");
                 return NO_MEMORY;
             }
         }
@@ -109,8 +107,7 @@ int main(int argc, char * argv[]){
             memberState = strtok(NULL, "\n");
             if(addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0) == ENOMEM) {
                 freeCity(nyc);
-                puts("Cant allocate destiny/ride");
-                perror("Error");
+                perror("Error. Cant allocate destiny/ride");
                 return NO_MEMORY;
             }
         }
@@ -122,7 +119,7 @@ int main(int argc, char * argv[]){
     fclose(stationsCsv);
 
     if((status = query1(nyc)) != OK) {
-       freeCity(nyc);
+        freeCity(nyc);
         return status;
     }
     if((status = query2(nyc)) != OK) {
@@ -144,12 +141,11 @@ int main(int argc, char * argv[]){
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear){
 
-    if(endYear < 0 || startYear < 0) return 0;
-    if(startYear != 0 && endYear != 0){
-        if(endYear < startYear) return 0;
-    }
-    if(strcmp(bikes, "bikesNYC.csv") != 0) return 0;
-    if(strcmp(stations,"stationsNYC.csv") != 0) return 0;
+    if(endYear < 0 || startYear < 0) 
+        return 0;
+    if(startYear != 0 && endYear != 0)
+        if(endYear < startYear) 
+            return 0;
     return 1;
 }
 
@@ -171,16 +167,14 @@ int query1(cityADT city){
     file = fopen("query1.csv", "w+");
 
     if(file == NULL) {
-        puts("Cant create file 'query1.csv'");
-        perror("Error");
+        perror("Error. Cant create file 'query1.csv'");
         return CANT_CREATE_FILE;
     }
 
     htmlTable table = newTable("query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips");
     
     if(table == NULL || errno == ENOMEM) {
-        puts("Cant create file 'query1.html'");
-        perror("Error");
+        perror("Error. Cant create file 'query1.html'");
         return CANT_CREATE_TABLE;
     }
 
@@ -215,16 +209,14 @@ int query2(cityADT city){
 
     FILE * file = fopen("query2.csv", "w+");
     if(file == NULL) {
-        puts("Cant create file 'query2.csv'");
-        perror("Error");
+        perror("Error. Cant create file 'query2.csv'");
         return CANT_CREATE_FILE;
     }
 
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
     
     if(table == NULL) {
-        puts("Cant create file 'query3.html'");
-        perror("Error");
+        perror("Error. Cant create file 'query3.html'");
         return CANT_CREATE_TABLE;
     }
     
@@ -254,8 +246,7 @@ int query3(cityADT city) {
     file = fopen("query3.csv", "w+");
 
     if(file == NULL) {
-        puts("Cant create file 'query3.csv'");
-        perror("Error");
+        perror("Error. Cant create file 'query3.csv'");
         return CANT_CREATE_FILE;
     }
 
@@ -263,8 +254,7 @@ int query3(cityADT city) {
     htmlTable table = newTable("query3.html", 3, "weekDay", "startedTrips", "endedTrips");
     
     if(table == NULL) {
-        puts("Cant create file 'query3.html'");
-        perror("Error");
+        perror("Error. Cant create file 'query3.html'");
         return CANT_CREATE_TABLE;
     }
     
@@ -297,8 +287,7 @@ int query4(cityADT city, int startYear, int endYear){
     FILE * file = fopen("query4.csv", "w+");
 
     if(file == NULL) {
-        puts("Cant create file 'query4.csv'");
-        perror("Error");
+        perror("Error. Cant create file 'query4.csv'");
         return CANT_CREATE_FILE;
     }
 
@@ -306,8 +295,7 @@ int query4(cityADT city, int startYear, int endYear){
     htmlTable table = newTable("query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips");
 
     if(table == NULL) {
-        puts("Cant create file 'query4.html'");
-        perror("Error");
+        perror("Error. Cant create file 'query4.html'");
         return CANT_CREATE_TABLE;
     }
 

@@ -61,21 +61,16 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
-    bool isPresent = 0;
+    bool found = 0;
     size_t i;
     bool orderFlag = 1;
-    for(i = 0; i < city->stationCount && !isPresent; i++){
+    for(i = 0; i < city->stationCount && !found; i++){
         if(city->stations[i]->id == id)
-            isPresent = 1;
-
-        /* Esta comparacion se hace para informar que el vector de estaciones ya no va a estar
-        en orden ascendiente.*/
-        if(city->stations[i]->id > id)
-            orderFlag = 0;
+            found = 1;
     }
 
     /* Si no esta, se crea */
-    if(!isPresent){
+    if(!found){
         if(city->ordered)
             city->ordered = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
         if(i % BLOCK == 0){
@@ -98,13 +93,10 @@ int addStation(cityADT city, char * name, size_t id){
         city->stations[i]->memberRides = city->stations[i]->casualRides = 0;
         city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
+        //si se crea una nueva estacion, se apaga el flag de ordered
+        city->ordered = 0;
     }
-    return !isPresent;
-}
-
-
-void accomodateStation(cityADT city) {
-    city->stations = realloc(city->stations, sizeof(tStation) * (city->stationCount));
+    return !found;
 }
 
 
@@ -122,8 +114,9 @@ int dateCompare(struct tm d1, struct tm d2){
     return diff;
 }
 
-size_t compareID(size_t id1, size_t id2) {
-    return id1 - id2
+/*Recibe dos punteros a estacion y compara sus id's*/
+size_t compareID(tStation * station1, tStation * station2) {
+    return station1->id - station2->id;
 }
 
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
@@ -151,9 +144,12 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     char * endName;
     bool foundStart = 0;
     bool foundEnd = 0;
-
-    if(!city->ordered)
-        qsort(city->stations, city->stationCount, sizeof(tStation *), &compareID);
+    
+    /*Si el vector no está ordenado, lo ordenamos*/
+    if(!city->ordered) {
+        qsort(city->stations, city->stationCount, sizeof(tStation *), compareID);
+        city->ordered = 1;
+    }
 
     /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
     for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
@@ -231,13 +227,6 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
 }
 
 
-void accomodateDestiny(cityADT city) {
-    for(size_t i = 0; i < city->stationCount; i++) {
-        city->stations[i]->destinies = realloc(city->stations[i]->destinies, sizeof(tDestiny) * (city->stations[i]->destiniesCount));
-    }
-}
-
-
 static
 void freeRides(tRide * ride){
     if(ride == NULL)
@@ -245,6 +234,7 @@ void freeRides(tRide * ride){
     freeRides(ride->next);
     free(ride);
 }
+
 
 void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
@@ -395,31 +385,31 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 }
 
 /*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
-void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
-    if(city->stations[stationIndex]->destiniesCount > 0){
-        tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
-        /*Se setean las variables con los valores del primer destino*/
-        size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
-        char * maxName = station.destinies[0].name;
+// void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
+//     if(city->stations[stationIndex]->destiniesCount > 0){
+//         tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
+//         /*Se setean las variables con los valores del primer destino*/
+//         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
+//         char * maxName = station.destinies[0].name;
       
-        /*Se recorren todos los destinos y se compara con el máximo registrado*/
-        for (int i = 1; i < station.destiniesCount; ++i) {
-            size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
-            if(rides > maxRides) {
-                maxRides = rides;
-                maxName = station.destinies[i].name;
-            }else if(rides == maxRides){
-                if(strcmp(maxName, station.destinies[i].name) > 0){
-                    maxRides = rides;
-                    maxName = station.destinies[i].name;
-                }
-            }
-        }
-        *ridesOut = maxRides;
-        *endName = maxName;
-    }else{
-        /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
-        *ridesOut = 0;
-        *endName = NULL;
-    }
-}
+//         /*Se recorren todos los destinos y se compara con el máximo registrado*/
+//         for (int i = 1; i < station.destiniesCount; ++i) {
+//             size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
+//             if(rides > maxRides) {
+//                 maxRides = rides;
+//                 maxName = station.destinies[i].name;
+//             }else if(rides == maxRides){
+//                 if(strcmp(maxName, station.destinies[i].name) > 0){
+//                     maxRides = rides;
+//                     maxName = station.destinies[i].name;
+//                 }
+//             }
+//         }
+//         *ridesOut = maxRides;
+//         *endName = maxName;
+//     }else{
+//         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
+//         *ridesOut = 0;
+//         *endName = NULL;
+//     }
+// }
