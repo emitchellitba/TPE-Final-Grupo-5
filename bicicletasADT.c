@@ -180,6 +180,14 @@ void changeOldest(tStation * station, char * name, struct tm date){
     station->oldest_date = date;
 }
 
+/* Usa la formula de Zeller, que usando el dia, el mes y el año que se le pasa, saca el dia de 
+la semana en el formato Lunes = 0, Martes = 1, ... Domingo = 6 */
+int dateToDayOfWeek(int year, int month, int day) {
+    int dayOfWeek;
+    dayOfWeek = (day + (13*(month + 1) / 5) + (year % 100) + ((int) (year % 100) / 4) + ((int) (year / 100) / 4) - 2*((int) year / 100));
+    return (dayOfWeek + 5) % 7;
+}
+
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
 se guardan ambos, en orden de agregado */
 static
@@ -197,7 +205,6 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
     ride->next = addRideRec(ride->next, start_date, end_date);
     return ride;
 }
-
 
 int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
     errno = 0;
