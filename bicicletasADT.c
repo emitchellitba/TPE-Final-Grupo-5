@@ -39,7 +39,7 @@ typedef struct station{
 typedef struct cityCDT{
     tStation ** stations;
     size_t stationCount, startedRidesPerDay[DAYS_OF_WEEK], endedRidesPerDay[DAYS_OF_WEEK];
-    bool accomodated:1;
+    bool ordered:1;
 } cityCDT;
 
 
@@ -61,18 +61,26 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
-    bool esta = 0;
+    bool isPresent = 0;
     size_t i;
-    for(i = 0; i < city->stationCount && !esta; i++){
+    bool orderFlag = 1;
+    for(i = 0; i < city->stationCount && !isPresent; i++){
         if(city->stations[i]->id == id)
-            esta = 1;
+            isPresent = 1;
+
+        /* Esta comparacion se hace para informar que el vector de estaciones ya no va a estar
+        en orden ascendiente.*/
+        if(city->stations[i]->id > id)
+            orderFlag = 0;
     }
-    
+
     /* Si no esta, se crea */
-    if(!esta){
+    if(!isPresent){
+        if(city->ordered)
+            city->ordered = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
         if(i % BLOCK == 0){
-            tStation * aux = city->stations;
-            aux = realloc(aux, (i + BLOCK) * sizeof(tStation));
+            tStation ** aux = city->stations;
+            aux = realloc(aux, (i + BLOCK) * sizeof(tStation *));
             if(aux == NULL || errno == ENOMEM) {
                 return errno;
             }
@@ -91,7 +99,7 @@ int addStation(cityADT city, char * name, size_t id){
         city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
     }
-    return !esta;
+    return !isPresent;
 }
 
 
@@ -114,6 +122,9 @@ int dateCompare(struct tm d1, struct tm d2){
     return diff;
 }
 
+size_t compareID(size_t id1, size_t id2) {
+    return id1 - id2
+}
 
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
 se guardan ambos, en orden de agregado */
@@ -141,7 +152,9 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     bool foundStart = 0;
     bool foundEnd = 0;
 
-    
+    if(!city->ordered)
+        qsort(city->stations, city->stationCount, sizeof(tStation *), &compareID);
+
     /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
     for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
         if(city->stations[i]->id == startStationId){
