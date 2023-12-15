@@ -457,7 +457,7 @@ tData next(cityADT city) {
     aux.memberRides = city->stations[city->iter]->memberRides;
     aux.casualRides = city->stations[city->iter]->casualRides;
     aux.oldestDestinyName = city->stations[city->iter]->oldestDestinyName;
-    aux.oldest_Date = city->stations[city->iter]->oldest_date;
+    aux.oldest_date = city->stations[city->iter]->oldest_date;
     city->iter++;
     return aux;
 }
