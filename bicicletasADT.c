@@ -48,15 +48,6 @@ typedef struct cityCDT{
 } cityCDT;
 
 
-/* Estructura usada para hacer listas ordenadas segun la cantidad de viajes o alfabeticamente, para poder crear vectores
-con los indices ordenados (para las funciones getIndexByRank y getIndexByAlph)*/
-typedef struct index{
-    char * name;
-    struct index * next;
-    size_t totalRides, index;
-}tIndex;
-
-
 
 cityADT newCity(void){
     return calloc(1, sizeof(cityCDT)); //si retorna NULL, es porque dio error el calloc.
@@ -293,113 +284,13 @@ void freeCity(cityADT city){
 }
 
 
-void ridesByStationIndex(cityADT city, int index, size_t rides[2]){
-    rides[0] = city->stations[index]->memberRides;
-    rides[1] = city->stations[index]->casualRides;
-}
-
 int getStationCount(cityADT city){
     return city->stationCount;
 }
 
-char * nameByStationIndex(cityADT city, int index){
-    return city->stations[index]->name;
-}
 
-
-static
-void listToArray(tIndex * list, size_t size, int indexVec[]){
-    for (int i = 0; i < size; ++i) {
-        indexVec[i] = list->index;
-        list = list->next;
-    }
-}
-
-static
-void freeList(tIndex * lista){
-    tIndex * aux;
-    while(lista != NULL) {
-        aux = lista->next;
-        free(lista->name);
-        free(lista);
-        lista = aux;
-    }
-}
-
-static
-tIndex * newNode(tIndex * actual, char * name, size_t totalRides, int index) {
-    tIndex * new = malloc(sizeof(tIndex));
-    if(new == NULL || errno == ENOMEM)
-        return actual;
-
-    new->name = malloc(strlen(name) + 1);
-    if(new->name == NULL || errno == ENOMEM) {
-        free(new);
-        return actual;
-    }
-    strcpy(new->name, name);
-    new->totalRides = totalRides;
-    new->index = index;
-    new->next = actual;
-    return new;
-}
-
-static
-tIndex * addIndexRankRec(tIndex * actual, char * name, size_t totalRides, int index){
-    if(actual == NULL || actual->totalRides <= totalRides) {
-        if(actual != NULL && actual->totalRides == totalRides){
-            if(strcmp(actual->name, name) < 0){
-                actual->next = addIndexRankRec(actual->next, name, totalRides, index);
-                return actual;
-            }
-        }
-        return newNode(actual, name, totalRides, index);
-    }else{
-        actual->next = addIndexRankRec(actual->next, name, totalRides, index);
-        return actual;
-    }
-}
-
-
-/* Deja en indexVec los indices ordenados según la cantidad total de viajes que tiene esa estación, descendentemente; si tienen 
-la misma cantidad de viajes, se pone primero el alfabeticamente menor (requisito query 1). Primero recorremos el vector de estaciones, 
-y paralelamente nos armamos una lista ordenada segun el criterio. Cada nodo de la lista almacena la cantidad de viajes y el nombre
-de las estacion para realizar las comparaciones correspondientes, y tambien el indice para luego hacer el vector.
-Luego pasamos esa lista a un vector y la retornamos. */
-
-int getIndexByRank(cityADT city, int indexVec[]){
-    tIndex * lista = NULL;
-    for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexRankRec(lista, city->stations[i]->name, city->stations[i]->casualRides + city->stations[i]->memberRides, i);
-    }
-    listToArray(lista, city->stationCount, indexVec);
-    freeList(lista);
-    return errno;
-}
-
-static
-tIndex * addIndexAlphRec(tIndex * actual, char * name, int index){
-    if(actual == NULL || strcmp(actual->name, name) >= 0) {
-        return newNode(actual, name, 0, index);
-    }else{
-        actual->next = addIndexAlphRec(actual->next, name, index);
-        return actual;
-    }
-}
-
-/*Idem getIndexByRank pero con orden aflabetico*/
-int getIndexByAlph(cityADT city, int indexVec[]){
-    tIndex * lista = NULL;
-    for (int i = 0; i < city->stationCount ; i++) {
-        lista = addIndexAlphRec(lista, city->stations[i]->name, i);
-    }
-    listToArray(lista, city->stationCount, indexVec);
-    freeList(lista);
-    return errno;
-}
 
 void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
-
     *nameStart = city->stations[index]->name;
     *nameEnd = city->stations[index]->oldestDestinyName;
     oldestTime->tm_mday = city->stations[index]->oldest_date.tm_mday;
@@ -420,9 +311,9 @@ size_t getEndedRides(cityADT city, int index) {
 /*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
 static
 size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){ 
-
-    if(ride == NULL)
+    if(ride == NULL || ride->start_date.tm_year > endYear){
         return 0;
+    }
     return (startYear == 0 || (ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
         + getRidesBetween(ride->next, startYear, endYear);
 }

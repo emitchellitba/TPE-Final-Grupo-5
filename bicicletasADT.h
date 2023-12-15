@@ -19,20 +19,8 @@ int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm 
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);
 
-/* Deja en rides[0] la cantidad de memberRides y en rides[1] la cantidad de casualRides de la estacion de indice index */
-void ridesByStationIndex(cityADT city,int index, size_t rides[2]);
-
 /* Retorna la cantidad de estaciones */
 int getStationCount(cityADT city);
-
-/* Retorna el nombre de la estacion con indice index */
-char * nameByStationIndex(cityADT city, int index);
-
-/* Deja en indexVec los indices de las estaciones ordenados descendentemente segun cantidad de viajes (con desempate alfabetico) */
-int getIndexByRank(cityADT city, int indexVec[]);
-
-/* Deja en indexVec los indices de las estaciones ordenados alfabeticamente */
-int getIndexByAlph(cityADT city, int indexVec[]);
 
 /* Retorna en variables de salida el nombre de la estacion de indice index, la fecha el viaje mas antiguo de la misma
 y el nombre del destino de ese viaje */
