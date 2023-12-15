@@ -91,6 +91,7 @@ int addStationsMON(cityADT city, FILE * stationsCsv){
         unsigned long stationId;
 
         stationId = atoi(strtok(aux, END_OF_TOKEN));
+        stationId = atoi(strtok(aux, END_OF_TOKEN));
         name = strtok(NULL, END_OF_TOKEN);
         if(addStation(city, name, stationId) == ENOMEM) {
             perror("Error. Can't allocate station");
