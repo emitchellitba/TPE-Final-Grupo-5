@@ -86,7 +86,7 @@ int main(int argc, char * argv[]){
 
 
     /*Agrego los viajes, si hay un error se libera la ciudad y retorna error*/
-    if(MON && (status = addBikesMon(montreal, bikesCsv))) != OK) {
+    if(MON && (status = addBikesMon(montreal, bikesCsv)) != OK) {
         freeCity(montreal);
         return status;
     }
