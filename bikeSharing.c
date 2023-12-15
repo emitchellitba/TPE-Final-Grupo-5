@@ -20,17 +20,17 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
 #define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude"
 
-int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear, int argc, char * argv[]);
+int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
 int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
 int query4(cityADT city, int startYear, int endYear);
 int query5(cityADT city, int startYear, int endYear);
-int addStationsMon(cityADT city, FILE * stationsCsv);
-int addStationsNyc(cityADT city, FILE * stationsCsv);
-int addBikesMon(cityADT city, FILE * bikesCsv);
-int addBikesNyc(cityADT city, FILE * bikesCsv);
+int addStationsMON(cityADT city, FILE * stationsCsv);
+int addStationsNYC(cityADT city, FILE * stationsCsv);
+int addBikesMON(cityADT city, FILE * bikesCsv);
+int addBikesNYC(cityADT city, FILE * bikesCsv);
 
 int main(int argc, char * argv[]){
     errno = 0;
@@ -40,10 +40,23 @@ int main(int argc, char * argv[]){
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
+    if(argc < 3 || argc > 5) {
+        return CANT_ARG_ERROR;
+    } else {
+        bikes = argv[BIKES_FILES];
+        stations = argv[STATIONS_FILES];
+        if(argc > 3) {
+            startYear = atoi(argv[START_YEAR]);
+            if(argc == 5) 
+                endYear = atoi(argv[END_YEAR]);
+        }
+    }
+
+
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
     /* Se chequea que los parametros sean los esperados */
-    if(status = checkParams(bikesCsv, stationsCsv, startYear, endYear, argc, argv) != OK) {
+    if((status = checkParams(bikesCsv, stationsCsv, startYear, endYear)) != OK) {
         if(status == INVALID_ARG) 
             fprintf(stderr, "Invalid arguments");
         if(status == CANT_ARG_ERROR)
@@ -170,21 +183,9 @@ int addBikesNYC(cityADT city, FILE * bikesCsv){
     return OK;
 }
 
-int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear, int argc, char * argv[]){
+int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
 
     char aux[MAX_TOKENS];
-
-    if(argc < 3 || argc > 5) {
-        return CANT_ARG_ERROR;
-    } else {
-        bikes = argv[BIKES_FILES];
-        stations = argv[STATIONS_FILES];
-        if(argc > 3) {
-            startYear = atoi(argv[START_YEAR]);
-            if(argc == 5) 
-                endYear = atoi(argv[END_YEAR]);
-        }
-    }
 
     fgets(aux, MAX_TOKENS, stations);
     if((MON && strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0) || (NYC && strcmp(aux, PRIMERA_LINEA_STATIONS_NYC) != 0))

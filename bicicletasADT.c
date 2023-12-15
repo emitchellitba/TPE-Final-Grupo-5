@@ -88,7 +88,8 @@ int addStation(cityADT city, char * name, size_t id){
         }
         strcpy(city->stations[i]->name, name);
         city->stations[i]->id = id;
-        city->stations[i]->destinies = city->stations[i]->circularRides = NULL;
+        city->stations[i]->destinies = NULL;
+        city->stations[i]->circularRides = NULL;
         city->stations[i]->memberRides = city->stations[i]->casualRides = 0;
         city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
@@ -117,8 +118,8 @@ int dateCompare(struct tm d1, struct tm d2){
 
 /* Recibe dos punteros a estacion y compara sus id's. Retorna un numero positivo si el primero
 es mayor, negativo si es menor y 0 si son iguales */
-size_t compareID(tStation * station1, tStation * station2) {
-    return station1->id - station2->id;
+int compareID(void * station1, void * station2) {
+    return ((tStation*)station1)->id - ((tStation*)station2)->id;
 }
 
 /* Busca una estacion segun su id en un vector de estaciones con busqueda binaria. 
@@ -222,7 +223,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     tStation * station;
     char * endName;
     
-    if(startIdx = searchId(city->stations, city->stationCount, startStationId) == NOT_FOUND){
+    if((startIdx = searchId(city->stations, city->stationCount, startStationId)) == NOT_FOUND){
         return 0;
     }
     if((endIdx = searchId(city->stations, city->stationCount, endStationId)) == NOT_FOUND){
@@ -304,7 +305,7 @@ int hasNext(cityADT city) {
 }
 
 tData next(cityADT city) {
-    if(!haxNext(city)) {
+    if(!hasNext(city)) {
         exit(1);
     }
     tData aux; 
@@ -319,10 +320,10 @@ tData next(cityADT city) {
 
 
 static
-int compareTotalRides(tStation * station1, tStation * station2){
+int compareTotalRides(void * station1, void * station2){
     size_t total1, total2;
-    if((total1 = station1->casualRides + station1->memberRides) == (total2 = station2->casualRides + station2->memberRides)){
-        return strcasecmp(station1->name, station2->name);
+    if((total1 = ((tStation*)station1)->casualRides + ((tStation*)station1)->memberRides) == (total2 = ((tStation*)station2)->casualRides + ((tStation*)station2)->memberRides)){
+        return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name);
     }
     return total1 - total2;
 }
@@ -333,8 +334,8 @@ void orderByRides(cityADT city){
 }
 
 static
-int compareAlph(tStation * station1, tStation * station2){
-    return strcasecmp(station1->name, station2->name); 
+int compareAlph(void * station1, void * station2){
+    return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name); 
 }
 
 void orderByAlph(cityADT city){
@@ -390,10 +391,11 @@ tMostPopular getMostPopular(tStation * station, int startYear, int endYear){
         mostPopular.cantRides = 0;
         mostPopular.endName = NULL;
     }
+    return mostPopular;
 }
 
 tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
-    if(!haxNext(city)) {
+    if(!hasNext(city)) {
         exit(1);
     }
     tMostPopular aux = getMostPopular(city->stations[city->iter], startYear, endYear);
