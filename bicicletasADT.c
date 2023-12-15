@@ -10,6 +10,7 @@
 
 #define BLOCK 50
 #define NOT_FOUND -1
+#define CHECK_ERRNO if(errno == ENOMEM) return errno
 
 /* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
 información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
@@ -82,9 +83,7 @@ int addStation(cityADT city, char * name, size_t id){
         if(i % BLOCK == 0){
             tStation ** aux = city->stations;
             aux = realloc(aux, (i + BLOCK) * sizeof(tStation *));
-            if(aux == NULL || errno == ENOMEM) {
-                return errno;
-            }
+            CHECK_ERRNO;
             city->stations = aux;
         }
         int len = strlen(name) + 1;
@@ -221,14 +220,11 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
 
     if(startStationId != endStationId){
         tDestiny * destiny;
-        checkDestiny(station->destinies, endStationId, endName, &destiny);
-        if(errno == ENOMEM){
-            return errno;
-        }
+        station->destinies = checkDestiny(station->destinies, endStationId, endName, &destiny);
+        CHECK_ERRNO;
         destiny->rides = addRideRec(destiny->rides, start_date, end_date);
-        if(errno == ENOMEM)
-            return errno;
-        
+        CHECK_ERRNO;
+
         /* Nos guardamos el viaje mas viejo para el query 3
         Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
         if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
@@ -243,8 +239,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         }
     }else{
         station->circularRides = addRideRec(station->circularRides, start_date, end_date);
-        if(errno == ENOMEM)
-            return errno;
+        
     }
 
     /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
