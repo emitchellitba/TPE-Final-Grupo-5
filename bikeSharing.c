@@ -57,6 +57,7 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
+    /* Aca se verifica si habia memoria para guardar las estaciones y los viajes/destinos */
     if(MON) 
         if(status = addStationsMON(city, stationsCsv) != OK || status = addBikesMON(city, bikesCsv) != OK) {
             freeCity(city);
