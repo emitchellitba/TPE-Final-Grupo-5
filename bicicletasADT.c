@@ -45,6 +45,7 @@ typedef struct station{
 typedef struct cityCDT{
     tStation ** stations;
     size_t stationCount, startedRidesPerDay[DAYS_OF_WEEK], endedRidesPerDay[DAYS_OF_WEEK];
+    size_t iter;
     bool ordered:1;
 } cityCDT;
 
@@ -297,7 +298,7 @@ int getStationCount(cityADT city){
     return city->stationCount;
 }
 
-
+static
 int compareTotalRides(tStation * station1, tStation * station2){
     size_t total1, total2;
     if((total1 = station1->casualRides + station1->memberRides) == (total2 = station2->casualRides + station2->memberRides)){
@@ -310,6 +311,7 @@ void orderByRides(cityADT city){
     qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
 }
 
+static
 int compareAlph(tStation * station1, tStation * station2){
     return strcasecmp(station1->name, station2->name); 
 }
@@ -436,4 +438,26 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         strcpy(*third, top3);
     }
 
+}
+
+void toBegin(cityADT city) {
+    city->iter = 0;
+}
+
+int hasNext(cityADT city) {
+    return city->iter < city->stationCount;
+}
+
+tData next(cityADT city) {
+    if(!haxNext(city)) {
+        return ITER_ERROR;
+    }
+    tData aux; 
+    aux.name = city->stations[city->iter]->name;
+    aux.memberRides = city->stations[city->iter]->memberRides;
+    aux.casualRides = city->stations[city->iter]->casualRides;
+    aux.oldestDestinyName = city->stations[city->iter]->oldestDestinyName;
+    aux.oldest_Date = city->stations[city->iter]->oldest_date;
+    city->iter++;
+    return aux;
 }
