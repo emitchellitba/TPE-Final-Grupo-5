@@ -427,11 +427,60 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
-void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third){
+static int getCircularRidesBetween(tRide* ride, int month, int startYear, int endYear){
 
-    int cantTop1, cantTop2, cantTop3;
+    if(ride == NULL || ride->start_date->tm_year > endYear || (ride->start_date->tm_year == endYear && ride->start_date->tm_month > month))
+        return 0;
 
+    // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
+    return getRidesBetween(ride->next, month, startYear, endYear) +
+    (startYear == 0 || ((ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
+    && ride->start_date->tm_mon == ride->end_date->tm_mon && ride->start_date->tm_mon == month));
 
+}
+
+void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
+
+    if(month < 0 || month > 11)
+        return;
+
+    int cantTop1 = 0, cantTop2 = 0, cantTop3 = 0;
+    char * top1, *top2, *top3;
+
+    for (int i = 0; i < city->stationCount; ++i) {
+        int cantAux = getRidesBetween(city->stations[i]->circularRides, month, startYear, endYear);
+        char * aux = city->stations[i]->name;
+
+        if(cantAux > 0){
+            if(cantAux > cantTop1 || (cantAux == cantTop1 && strcmp(top1, aux) > 0)){
+                cantTop3 = cantTop2;
+                cantTop2 = cantTop1;
+                cantTop1 = cantAux;
+                top3 = top2;
+                top2 = top1;
+                top1 = aux;
+            }else if(cantAux > cantTop2 || (cantAux == cantTop2 && strcmp(top2, aux) > 0)){
+                cantTop3 = cantTop2;
+                cantTop2 = cantAux;
+                top3 = top2;
+                top2 = aux;
+            }else if(cantAux >= cantTop3 || (cantAux == cantTop3 && strcmp(top3, aux) > 0)){
+                cantTop3 = cantAux;
+                top3 = aux;
+            }
+        }
+
+    }
+
+    if(cantTop1 == 0 || cantTop2 == 0 || cantTop3 == 0){
+        strcpy(*first, "Empty");
+        strcpy(*second, "Empty");
+        strcpy(*third, "Empty");
+    }else{
+        strcpy(*first, top1);
+        strcpy(*second, top2);
+        strcpy(*third, top3);
+    }
 
 }
 
