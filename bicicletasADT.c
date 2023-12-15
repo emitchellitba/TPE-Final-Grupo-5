@@ -318,15 +318,15 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
-static int getCircularRidesBetween(tRide* ride, int month, int startYear, int endYear){
+static int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
 
-    if(ride == NULL || ride->start_date->tm_year > endYear || (ride->start_date->tm_year == endYear && ride->start_date->tm_month > month))
+    if(ride == NULL || ride->start_date.tm_year > endYear || (ride->start_date.tm_year == endYear && ride->start_date.tm_mon > month))
         return 0;
 
     // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
-    return getRidesBetween(ride->next, month, startYear, endYear) +
+    return getCircularRidesBetween(ride->next, month, startYear, endYear) +
     (startYear == 0 || ((ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
-    && ride->start_date->tm_mon == ride->end_date->tm_mon && ride->start_date->tm_mon == month));
+    && ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month);
 
 }
 
@@ -339,7 +339,7 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     char * top1, *top2, *top3;
 
     for (int i = 0; i < city->stationCount; ++i) {
-        int cantAux = getRidesBetween(city->stations[i]->circularRides, month, startYear, endYear);
+        int cantAux = getCircularRidesBetween(city->stations[i]->circularRides, month, startYear, endYear);
         char * aux = city->stations[i]->name;
 
         if(cantAux > 0){
