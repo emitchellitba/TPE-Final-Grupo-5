@@ -176,6 +176,18 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
     return destiny;
 }
 
+/* Cambia en station el oldestDestinyName por name y oldestDate por date */
+static
+void changeOldest(tStation * station, char * name, struct tm date){
+    char * aux = realloc(station->oldestDestinyName, strlen(name) + 1);
+    if(aux == NULL || errno == ENOMEM) {
+        return;
+    }
+    station->oldestDestinyName = aux;
+    strcpy(station->oldestDestinyName, name);
+    station->oldest_date = date;
+}
+
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
 se guardan ambos, en orden de agregado */
 static
@@ -225,21 +237,15 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         destiny->rides = addRideRec(destiny->rides, start_date, end_date);
         CHECK_ERRNO;
 
-        /* Nos guardamos el viaje mas viejo para el query 3
+        /* Nos guardamos el viaje mas viejo (no circular) para el query 3
         Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
         if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
-            char * aux = station->oldestDestinyName;
-            aux = realloc(station->oldestDestinyName, strlen(endName) + 1);
-            if(aux == NULL || errno == ENOMEM) {
-                return errno;
-            }
-            station->oldestDestinyName = aux;
-            strcpy(station->oldestDestinyName, endName);
-            station->oldest_date = start_date;
+            changeOldest(station, endName, start_date);
+            CHECK_ERRNO;
         }
     }else{
         station->circularRides = addRideRec(station->circularRides, start_date, end_date);
-        
+        CHECK_ERRNO;
     }
 
     /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
