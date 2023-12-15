@@ -209,16 +209,8 @@ void readDate(char * s, struct tm * date) {
 }
 
 int query1(cityADT city){
-    int cantStations = getStationCount(city);
-    int indexVec[cantStations];
 
-    if(getIndexByRank(city, indexVec) == ENOMEM) {
-        perror("Error");
-        return NO_MEMORY;
-    }
-
-    FILE * file;
-    file = fopen("query1.csv", "w+");
+    FILE * file = fopen("query1.csv", "w+");
 
     if(file == NULL) {
         perror("Error. Cant create file 'query1.csv'");
@@ -235,15 +227,15 @@ int query1(cityADT city){
     fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
     char memstr[SIZE_NUM], casstr[SIZE_NUM], allnum[SIZE_NUM];
 
-    for (int i = 0; i < cantStations; ++i) {
-        unsigned long v[2];
-        ridesByStationIndex(city, indexVec[i], v);
-        char * name = nameByStationIndex(city, indexVec[i]);
-        fprintf(file, "%s;%ld;%ld;%ld\n", name, v[0], v[1], v[0]+v[1]);
-        sprintf(memstr, "%ld", v[0]);
-        sprintf(casstr, "%ld", v[1]);
-        sprintf(allnum, "%ld", v[0]+v[1]);
-        addHTMLRow(table, name, memstr, casstr, allnum);
+    orderByRides(city);
+    toBegin(city);
+    while(hasNext (city)){
+        tData data = next(city);
+        fprintf(file, "%s;%ld;%ld;%ld\n", data.name, data.memberRides, data.casualRides, data.memberRides + data.casualRides);
+        sprintf(memstr, "%ld", data.memberRides);
+        sprintf(casstr, "%ld", data.casualRides);
+        sprintf(allnum, "%ld", data.memberRides + data.casualRides);
+        addHTMLRow(table, data.name, memstr, casstr, allnum);
     }
     closeHTMLTable(table);
     fclose(file);
@@ -252,16 +244,9 @@ int query1(cityADT city){
 }
 
 int query2(cityADT city){
-
-    int cantStations = getStationCount(city);
-    int indexVec[cantStations];
-
-    if(getIndexByAlph(city, indexVec) == ENOMEM) {
-        perror("Error");
-        return NO_MEMORY;
-    }
-
+ 
     FILE * file = fopen("query2.csv", "w+");
+    
     if(file == NULL) {
         perror("Error. Cant create file 'query2.csv'");
         return CANT_CREATE_FILE;
@@ -270,23 +255,24 @@ int query2(cityADT city){
     htmlTable table = newTable("query2.html", 3, "bikeStation", "bikeEndStation", "oldestDateTime");
 
     if(table == NULL) {
-        perror("Error. Cant create file 'query3.html'");
+        perror("Error. Cant create file 'query2.html'");
         return CANT_CREATE_TABLE;
     }
 
     char datestr[SIZE_DATE];
-
     fprintf(file, "bikeStation;bikeEndStation;oldestDateTime\n");
-    for (int i = 0; i < cantStations; ++i) {
-        char * nameStart, * nameEnd;
-        struct tm oldestTime;
-        getOldest(city, indexVec[i], &nameStart, &nameEnd, &oldestTime);
+
+    orderByAlph(city);
+    toBegin(city);
+    while(hasNext(city)){
+        tData data = next(city);
         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
-        if(nameEnd != NULL){
-            fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
-                    oldestTime.tm_hour, oldestTime.tm_min);
-            sprintf(datestr, "%d/%d/%d %d:%d", oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year, oldestTime.tm_hour, oldestTime.tm_min);
-            addHTMLRow(table, nameStart, nameEnd, datestr);
+        if(data.oldestDestinyName != NULL){
+            fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", data.name, data.oldestDestinyName, data.oldest_date.tm_mday, data.oldest_date.tm_mon, 
+                    data.oldest_date.tm_year, data.oldest_date.tm_hour, data.oldest_date.tm_min);
+            sprintf(datestr, "%d/%d/%d %d:%d", data.oldest_date.tm_mday, data.oldest_date.tm_mon, data.oldest_date.tm_year, 
+                    data.oldest_date.tm_hour, data.oldest_date.tm_min);
+            addHTMLRow(table, data.name, data.oldestDestinyName, datestr);
         }
     }
     closeHTMLTable(table);

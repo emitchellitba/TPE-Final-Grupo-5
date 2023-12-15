@@ -8,6 +8,8 @@
 typedef struct{
     char * name;
     size_t memberRides, casualRides;
+    char * oldestDestinyName;
+    struct tm oldest_date;
 } tData;
 
 typedef struct cityCDT * cityADT;
