@@ -214,7 +214,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     /*Si el vector no está ordenado, lo ordenamos*/
     if(city->order != idOrder) {
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareID);
-        city->ordered = 1;
+        city->order = idOrder;
     }
 
     /* Revisamos que las estaciones de origen y fin existan. Si encontramos ambas, nos guardamos los datos necesarios */
@@ -297,10 +297,16 @@ void freeCity(cityADT city){
 // Funciones de iteracion
 void toBegin(cityADT city) {
     city->iter = 0;
+}
 
+int hasNext(cityADT city) {
+    return city->iter < city->stationCount;
+}
 
-int getStationCount(cityADT city){
-    return city->stationCount;
+tData next(cityADT city) {
+    if(!haxNext(city)) {
+        exit(1);
+    }
     tData aux; 
     aux.name = city->stations[city->iter]->name;
     aux.memberRides = city->stations[city->iter]->memberRides;
