@@ -421,8 +421,7 @@ int query5(cityADT city, int startYear, int endYear){
     FILE * file = fopen("query5.csv", "w+");
 
     if(file == NULL) {
-        puts("Cant create file 'query5.csv'");
-        perror("Error");
+        perror("Error. Cant create file 'query5.csv'");
         return CANT_CREATE_FILE;
     }
 
@@ -431,8 +430,7 @@ int query5(cityADT city, int startYear, int endYear){
     htmlTable table = newTable("query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
 
     if(table == NULL) {
-        puts("Cant create file 'query5.html'");
-        perror("Error");
+        perror("Error. Cant create file 'query5.html'");
         return CANT_CREATE_TABLE;
     }
 
