@@ -26,12 +26,18 @@ int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
 int query4(cityADT city, int startYear, int endYear);
+int addStationsMon(cityADT city, FILE * stationsCsv);
+int addStationsNyc(cityADT city, FILE * stationsCsv);
+int addBikesMon(cityADT city, FILE * bikesCsv);
+int addBikesNyc(cityADT city, FILE * bikesCsv);
+
+
 
 
 int main(int argc, char * argv[]){
     errno = 0;
     int status = OK;
-    
+
     /* Si no se pasan años como parametro, permanecen iguales a 0 */
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
@@ -66,57 +72,25 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
-
-    char aux[MAX_TOKENS];
-    bool first = 1;
-    char s[LONG_PUNYCOMA] = ";";
-
-    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
-    while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
-        char * name;
-        unsigned long stationId;
-
-       if(first) {
-            first = 0;
-        } else {
-            stationId = atoi(strtok(aux, s));
-            name = strtok(NULL, s);
-            if(addStation(montreal, name, stationId) == ENOMEM) {
-                freeCity(montreal);
-                puts("Cant allocate station");
-                perror("Error");
-                return NO_MEMORY;
-            }
-        }
+    if(MON && (status = addStationsMon(montreal, stationsCsv)) != OK) {
+        freeCity(montreal);
+        return status;
     }
 
-    accomodateStation(montreal);
-
-    /* Se leen y almacenan los viajes, omitiendo la primera linea con el encabezado */
-    first = 1;
-    while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
-        unsigned long startStationId, endStationId;
-        struct tm startDate, endDate;
-        int isMember;
-
-        if(first) {
-            first = 0;
-        } else {
-            readDate(strtok(aux, s), &startDate);
-            startStationId = atoi(strtok(NULL, s));
-            readDate(strtok(NULL, s), &endDate);
-            endStationId = atoi(strtok(NULL, s));
-            isMember = atoi(strtok(NULL, "\n"));
-            if(addRide(montreal, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
-                freeCity(montreal);
-                puts("Can't allocate destiny/ride");
-                perror("Error");
-                return NO_MEMORY;
-            }
-        }
+    if(NYC && (status = addStationsNyc(montreal, stationsCsv)) != OK) {
+        freeCity(montreal);
+        return status;
     }
 
-    accomodateDestiny(montreal);
+    if(MON && (status = addBikesMon(montreal, bikesCsv))) != OK) {
+        freeCity(montreal);
+        return status;
+    }
+
+    if(NYC && (status = addBikesNyc(montreal, bikesCsv))) != OK) {
+        freeCity(montreal);
+        return status;
+    }
 
     fclose(bikesCsv);
     fclose(stationsCsv);
@@ -142,6 +116,32 @@ int main(int argc, char * argv[]){
     return status;
 }
 
+int addStationsMon(cityADT city, FILE * stationsCsv){
+
+    char aux[MAX_TOKENS];
+    char s[LONG_PUNYCOMA] = ";";
+
+    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
+    while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
+        char * name;
+        unsigned long stationId;
+
+        stationId = atoi(strtok(aux, s));
+        name = strtok(NULL, s);
+            if(addStation(city, name, stationId) == ENOMEM) {
+                freeCity(city);
+                puts("Cant allocate station");
+                perror("Error");
+                return NO_MEMORY;
+            }
+    }
+
+    return OK;
+
+
+}
+
+
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
 
     char aux[MAX_TOKENS];
@@ -160,10 +160,10 @@ int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
         return 0;
 
 
-    if(endYear < 0 || startYear < 0) 
+    if(endYear < 0 || startYear < 0)
         return 0;
     if(startYear != 0 && endYear != 0)
-        if(endYear < startYear) 
+        if(endYear < startYear)
             return 0;
 
 
@@ -252,7 +252,7 @@ int query2(cityADT city){
         char * nameStart, * nameEnd;
         struct tm oldestTime;
         getOldest(city, indexVec[i], &nameStart, &nameEnd, &oldestTime);
-         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
+        /* Solo se imprime si la estacion tiene viajes que no sean circulares */
         if(nameEnd != NULL){
             fprintf(file, "%s;%s;%d/%d/%d %d:%d\n", nameStart, nameEnd, oldestTime.tm_mday, oldestTime.tm_mon, oldestTime.tm_year,
                     oldestTime.tm_hour, oldestTime.tm_min);
@@ -346,3 +346,77 @@ int query4(cityADT city, int startYear, int endYear){
 
     return OK;
 }
+
+int addStationsNyc(cityADT city, FILE * stationsCsv){
+
+    char aux[MAX_TOKENS];
+    char s[LONG_PUNYCOMA] = ";";
+
+    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
+    while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
+        char *name;
+        unsigned long stationId;
+
+        name = strtok(aux, ";");
+        for (int i = 0; i < 2; i++)
+            strtok(NULL, ";");                  //ignoramos la longitud y la latitud
+        stationId = atoi(strtok(NULL, "\n"));
+        if (addStation(city, name, stationId) == ENOMEM) {
+            freeCity(city);
+            perror("Error. Can't allocate Station\n");
+            return NO_MEMORY;
+        }
+
+    }
+    return OK;
+}
+
+int addBikesMon(cityADT city, FILE * bikesCsv){
+
+    char aux[MAX_TOKENS];
+    char s[LONG_PUNYCOMA] = ";";
+    unsigned long startStationId, endStationId;
+    struct tm startDate, endDate;
+    int isMember;
+
+    /* Se leen y almacenan los viajes*/
+    while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
+
+        readDate(strtok(aux, s), &startDate);
+        startStationId = atoi(strtok(NULL, s));
+        readDate(strtok(NULL, s), &endDate);
+        endStationId = atoi(strtok(NULL, s));
+        isMember = atoi(strtok(NULL, "\n"));
+        if (addRide(city, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
+            freeCity(city);
+            puts("Can't allocate destiny/ride");
+            perror("Error");
+            return NO_MEMORY;
+        }
+    }
+    return OK;
+
+}
+
+int addBikesNyc(cityADT city, FILE * bikesCsv){
+
+    unsigned long startStationId, endStationId;
+    struct tm startDate, endDate;
+    char * memberState;
+
+    while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
+        readDate(strtok(aux, ";"), &startDate);
+        startStationId = atoi(strtok(NULL, ";"));
+        readDate(strtok(NULL, ";"), &endDate);
+        endStationId = atoi(strtok(NULL, ";"));
+        strtok(NULL, ";"); //ignoramos rideable
+        memberState = strtok(NULL, "\n");
+        if(addRide(city, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0) == ENOMEM) {
+              freeCity(city);
+              perror("Error. Cant allocate destiny/ride");
+              return NO_MEMORY;
+            }
+    }
+    return OK;
+}
+
