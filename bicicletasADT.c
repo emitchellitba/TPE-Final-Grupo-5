@@ -94,6 +94,7 @@ int addStation(cityADT city, char * name, size_t id){
         city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
+        //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
         city->ordered = 0;
     }
     return !found;
