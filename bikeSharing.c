@@ -12,7 +12,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
-#define LONG_PUNYCOMA 2
+#define END_OF_TOKEN ";"
 #define SIZE_DATE 18
 #define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual"
 #define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id"
@@ -82,12 +82,12 @@ int main(int argc, char * argv[]){
         return status;
     }
 
-    if(MON && (status = addBikesMon(montreal, bikesCsv))) != OK) {
+    if(MON && (status = addBikesMon(montreal, bikesCsv)) != OK) {
         freeCity(montreal);
         return status;
     }
 
-    if(NYC && (status = addBikesNyc(montreal, bikesCsv))) != OK) {
+    if(NYC && (status = addBikesNyc(montreal, bikesCsv)) != OK) {
         freeCity(montreal);
         return status;
     }
@@ -119,7 +119,6 @@ int main(int argc, char * argv[]){
 int addStationsMon(cityADT city, FILE * stationsCsv){
 
     char aux[MAX_TOKENS];
-    char s[LONG_PUNYCOMA] = ";";
 
     /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
@@ -127,7 +126,7 @@ int addStationsMon(cityADT city, FILE * stationsCsv){
         unsigned long stationId;
 
         stationId = atoi(strtok(aux, s));
-        name = strtok(NULL, s);
+        name = strtok(NULL, END_OF_TOKEN);
             if(addStation(city, name, stationId) == ENOMEM) {
                 freeCity(city);
                 puts("Cant allocate station");
@@ -137,8 +136,6 @@ int addStationsMon(cityADT city, FILE * stationsCsv){
     }
 
     return OK;
-
-
 }
 
 
