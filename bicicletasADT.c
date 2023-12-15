@@ -67,12 +67,14 @@ int addStation(cityADT city, char * name, size_t id){
     for(i = 0; i < city->stationCount && !found; i++){
         if(city->stations[i]->id == id)
             found = 1;
+        /* Si se encuentra que el vector de estaciones esta desordenado o se va a desordenar al agregar
+        la estacion nueva, notifica que el vector esta desordenado */
+        if(city->stations[i]->id > id || (i >= 1 && city->stations[i-1]->id > city->stations[i]->id))
+            orderFlag = 0;
     }
 
     /* Si no esta, se crea */
     if(!found){
-        if(city->ordered)
-            city->ordered = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
         if(i % BLOCK == 0){
             tStation ** aux = city->stations;
             aux = realloc(aux, (i + BLOCK) * sizeof(tStation *));
@@ -95,7 +97,8 @@ int addStation(cityADT city, char * name, size_t id){
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
-        city->ordered = 0;
+        if(!orderFlag)
+            city->ordered = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
     }
     return !found;
 }
