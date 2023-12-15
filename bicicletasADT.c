@@ -13,6 +13,8 @@
 #define NOT_FOUND -1
 #define CHECK_ERRNO if(errno == ENOMEM) return errno
 
+enum orderedBy {noOrder = 0, idOrder, ridesOrder, alphOrder};
+
 /* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
 información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
 Dentro de los vectores de destinos, se almacena su nombre y un puntero al primer elemento de una lista de los viajes realizados entre esas 
@@ -46,7 +48,7 @@ typedef struct cityCDT{
     tStation ** stations;
     size_t stationCount, startedRidesPerDay[DAYS_OF_WEEK], endedRidesPerDay[DAYS_OF_WEEK];
     size_t iter;
-    bool ordered:1;
+    int order;
 } cityCDT;
 
 
@@ -59,7 +61,7 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
-    bool orderFlag = 1;
+    bool orderFlag = idOrder;
     bool found = 0;
     size_t i;
     for(i = 0; i < city->stationCount && !found; i++){
@@ -68,7 +70,7 @@ int addStation(cityADT city, char * name, size_t id){
         /* Si se encuentra que el vector de estaciones esta desordenado o se va a desordenar al agregar
         la estacion nueva, notifica que el vector esta desordenado */
         if(city->stations[i]->id > id || (i >= 1 && city->stations[i-1]->id > city->stations[i]->id))
-            orderFlag = 0;
+            orderFlag = noOrder;
     }
 
     /* Si no esta, se crea */
@@ -93,7 +95,7 @@ int addStation(cityADT city, char * name, size_t id){
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
         if(!orderFlag)
-            city->ordered = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
+            city->order = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
     }
     return !found;
 }
@@ -210,7 +212,7 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
     errno = 0;
     /*Si el vector no está ordenado, lo ordenamos*/
-    if(!city->ordered) {
+    if(city->order != idOrder) {
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareID);
         city->ordered = 1;
     }
@@ -292,11 +294,23 @@ void freeCity(cityADT city){
     free(city);
 }
 
+// Funciones de iteracion
+void toBegin(cityADT city) {
+    city->iter = 0;
 
 
 int getStationCount(cityADT city){
     return city->stationCount;
+    tData aux; 
+    aux.name = city->stations[city->iter]->name;
+    aux.memberRides = city->stations[city->iter]->memberRides;
+    aux.casualRides = city->stations[city->iter]->casualRides;
+    aux.oldestDestinyName = city->stations[city->iter]->oldestDestinyName;
+    aux.oldest_date = city->stations[city->iter]->oldest_date;
+    city->iter++;
+    return aux;
 }
+
 
 static
 int compareTotalRides(tStation * station1, tStation * station2){
@@ -309,6 +323,7 @@ int compareTotalRides(tStation * station1, tStation * station2){
 
 void orderByRides(cityADT city){
     qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
+    city->order = ridesOrder;
 }
 
 static
@@ -318,18 +333,8 @@ int compareAlph(tStation * station1, tStation * station2){
 
 void orderByAlph(cityADT city){
     qsort(city->stations, city->stationCount, sizeof(tStation *), compareAlph);
+    city->order = alphOrder;
 }
-
-void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime){
-    *nameStart = city->stations[index]->name;
-    *nameEnd = city->stations[index]->oldestDestinyName;
-    oldestTime->tm_mday = city->stations[index]->oldest_date.tm_mday;
-    oldestTime->tm_mon = city->stations[index]->oldest_date.tm_mon;
-    oldestTime->tm_year = city->stations[index]->oldest_date.tm_year;
-    oldestTime->tm_hour = city->stations[index]->oldest_date.tm_hour;
-    oldestTime->tm_min = city->stations[index]->oldest_date.tm_min;
-}
-
 
 size_t getStartedRides(cityADT city, int index) {
     return city->startedRidesPerDay[index];
@@ -352,34 +357,43 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 
 
 /*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
-// void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
-//     if(city->stations[stationIndex]->destiniesCount > 0){
-//         tStation station = city->stations[stationIndex]; //aca no se como hacer, si pasar la variable a puntero o que, pero creo que esta capaz la borramos entonces np
-//         /*Se setean las variables con los valores del primer destino*/
-//         size_t maxRides = getRidesBetween(station.destinies[0].rides, startYear, endYear);
-//         char * maxName = station.destinies[0].name;
+static
+tMostPopular getMostPopular(tStation * station, int startYear, int endYear){
+    tMostPopular mostPopular;
+    mostPopular.name = station->name;
+    if(station->destinies != NULL){
+        /*Se setean las variables con los valores del primer destino*/
+        size_t maxRides = getRidesBetween(station->destinies->rides, startYear, endYear);
+        char * maxName = station->destinies->name;
+
+        tDestiny * aux = station->destinies->next; 
+
+        /*Se recorren todos los destinos y se compara con el máximo registrado*/
+        while(aux != NULL){
+            size_t rides =  getRidesBetween(aux->rides, startYear, endYear);
+            if(rides > maxRides || (rides == maxRides && strcasecmp(maxName, aux->name) > 0)) {
+                maxRides = rides;
+                maxName = aux->name;
+            }
+        }
       
-//         /*Se recorren todos los destinos y se compara con el máximo registrado*/
-//         for (int i = 1; i < station.destiniesCount; ++i) {
-//             size_t rides =  getRidesBetween(station.destinies[i].rides, startYear, endYear);
-//             if(rides > maxRides) {
-//                 maxRides = rides;
-//                 maxName = station.destinies[i].name;
-//             }else if(rides == maxRides){
-//                 if(strcasecmp(maxName, station.destinies[i].name) > 0){
-//                     maxRides = rides;
-//                     maxName = station.destinies[i].name;
-//                 }
-//             }
-//         }
-//         *ridesOut = maxRides;
-//         *endName = maxName;
-//     }else{
-//         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
-//         *ridesOut = 0;
-//         *endName = NULL;
-//     }
-// }
+        mostPopular.cantRides = maxRides;
+        mostPopular.endName = maxName;
+    }else{
+         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
+        mostPopular.cantRides = 0;
+        mostPopular.endName = NULL;
+    }
+}
+
+tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
+    if(!haxNext(city)) {
+        exit(1);
+    }
+    tMostPopular aux = getMostPopular(city->stations[city->iter], startYear, endYear);
+    city->iter++;
+    return aux;
+}
 
 
 static 
@@ -438,26 +452,4 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         strcpy(*third, top3);
     }
 
-}
-
-void toBegin(cityADT city) {
-    city->iter = 0;
-}
-
-int hasNext(cityADT city) {
-    return city->iter < city->stationCount;
-}
-
-tData next(cityADT city) {
-    if(!haxNext(city)) {
-        return ITER_ERROR;
-    }
-    tData aux; 
-    aux.name = city->stations[city->iter]->name;
-    aux.memberRides = city->stations[city->iter]->memberRides;
-    aux.casualRides = city->stations[city->iter]->casualRides;
-    aux.oldestDestinyName = city->stations[city->iter]->oldestDestinyName;
-    aux.oldest_date = city->stations[city->iter]->oldest_date;
-    city->iter++;
-    return aux;
 }

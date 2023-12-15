@@ -20,7 +20,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
 #define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude"
 
-int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
+int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear, int argc, char * argv[]);
 void readDate(char * s, struct tm * date);
 int query1(cityADT city);
 int query2(cityADT city);
@@ -59,13 +59,13 @@ int main(int argc, char * argv[]){
 
     /* Aca se verifica si habia memoria para guardar las estaciones y los viajes/destinos */
     if(MON) 
-        if(status = addStationsMON(city, stationsCsv) != OK || status = addBikesMON(city, bikesCsv) != OK) {
+        if((status = addStationsMON(city, stationsCsv)) != OK || (status = addBikesMON(city, bikesCsv)) != OK) {
             freeCity(city);
             return status;
     }
 
     if(NYC) 
-        if(status = addStationsNYC(city, stationsCsv) != OK || status = addBikesNYC(city, bikesCsv) != OK) {
+        if((status = addStationsNYC(city, stationsCsv)) != OK || (status = addBikesNYC(city, bikesCsv)) != OK) {
             freeCity(city);
             return status;
     }
@@ -187,7 +187,7 @@ int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear, int argc
     }
 
     fgets(aux, MAX_TOKENS, stations);
-    if(MON && strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0 || (NYC && strcmp(aux, PRIMERA_LINEA_STATIONS_NYC) != 0))
+    if((MON && strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0) || (NYC && strcmp(aux, PRIMERA_LINEA_STATIONS_NYC) != 0))
         return INVALID_ARG;
 
     fgets(aux, MAX_TOKENS, bikes);
@@ -316,14 +316,6 @@ int query3(cityADT city) {
 
 int query4(cityADT city, int startYear, int endYear){
 
-    size_t cantStations = getStationCount(city);
-    int indexVec[cantStations];
-
-    if(getIndexByAlph(city, indexVec) == ENOMEM) {
-        perror("Error");
-        return NO_MEMORY;
-    }
-
     FILE * file = fopen("query4.csv", "w+");
 
     if(file == NULL) {
@@ -341,15 +333,15 @@ int query4(cityADT city, int startYear, int endYear){
 
     char numstr[SIZE_NUM];
 
-    for (int i = 0; i < cantStations; ++i) {
-        char * endName, * startName = nameByStationIndex(city, indexVec[i]);
-        size_t cantRides;
-        getMostPopular(city, indexVec[i], &cantRides, &endName, startYear, endYear);
-        sprintf(numstr, "%ld", cantRides);
+    orderByAlph(city);
+    toBegin(city);
+    while(hasNext(city)){
+        tMostPopular mostPopular = nextMostPopular(city, startYear, endYear);
+        sprintf(numstr, "%ld", mostPopular.cantRides);
         /* Solo se imprime si la estacion tiene viajes */
-        if(endName != NULL) {
-            fprintf(file, "%s;%s;%ld\n", startName, endName, cantRides);
-            addHTMLRow(table, startName, endName, numstr);
+        if(mostPopular.endName != NULL) {
+            fprintf(file, "%s;%s;%ld\n", mostPopular.name, mostPopular.endName, mostPopular.cantRides);
+            addHTMLRow(table, mostPopular.name, mostPopular.endName, numstr);
         }
     }
     closeHTMLTable(table);

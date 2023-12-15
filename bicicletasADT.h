@@ -12,6 +12,12 @@ typedef struct{
     struct tm oldest_date;
 } tData;
 
+typedef struct{
+    char * name;
+    char * endName;
+    size_t cantRides;
+} tMostPopular;
+
 typedef struct cityCDT * cityADT;
 
 /* Reserva el espacio para una nueva ciudad, sin estaciones ni viajes */
@@ -26,12 +32,15 @@ int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm 
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);
 
-/* Retorna la cantidad de estaciones */
-int getStationCount(cityADT city);
+void toBegin(cityADT city);
 
-/* Retorna en variables de salida el nombre de la estacion de indice index, la fecha el viaje mas antiguo de la misma
-y el nombre del destino de ese viaje */
-void getOldest(cityADT city, int index, char ** nameStart, char ** nameEnd, struct tm * oldestTime);
+int hasNext(cityADT city);
+
+tData next(cityADT city);
+
+void orderByRides(cityADT city);
+
+void orderByAlph(cityADT city);
 
 /* Retorna la cantidad de viajes que se inciaron en el dia indicado por dayOfWeek */
 size_t getStartedRides(cityADT city, int dayOfWeek);
@@ -39,9 +48,7 @@ size_t getStartedRides(cityADT city, int dayOfWeek);
 /* Retorna la cantidad de viajes que se terminaron en el dia indicado por dayOfWeek */
 size_t getEndedRides(cityADT city, int dayOfWeek);
 
-/* Retorna en variables de salida el nombre y la cantidad de viajes del destino con mas viajes saliendo desde la estacion
-de indice stationIndex */
-void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear);
+tMostPopular nextMostPopular(cityADT city, int startYear, int endYear);
 
 /* Retorna en variables de salida los nombres del top 3 estaciones con mas viajes circulares
  * en caso de que no halla 3 estaciones con mas viajes circulares, retorna "empty" en todos los campos*/
