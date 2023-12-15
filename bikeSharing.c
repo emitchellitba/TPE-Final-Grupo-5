@@ -14,6 +14,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define SIZE_NUM 10
 #define END_OF_TOKEN ";"
 #define SIZE_DATE 18
+#define MONTHS 12
 #define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual"
 #define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id"
 #define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
@@ -26,6 +27,7 @@ int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
 int query4(cityADT city, int startYear, int endYear);
+int query5(cityADT city, int startYear, int endYear);
 int addStationsMon(cityADT city, FILE * stationsCsv);
 int addStationsNyc(cityADT city, FILE * stationsCsv);
 int addBikesMon(cityADT city, FILE * bikesCsv);
@@ -71,6 +73,7 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
+    /*Agrego las estaciones, si hay un error se libera la ciudad y retorna error*/
     if(MON && (status = addStationsMon(montreal, stationsCsv)) != OK) {
         freeCity(montreal);
         return status;
@@ -81,7 +84,12 @@ int main(int argc, char * argv[]){
         return status;
     }
 
+<<<<<<< Updated upstream
     if(MON && (status = addBikesMon(montreal, bikesCsv)) != OK) {
+=======
+    /*Agrego los viajes, si hay un error se libera la ciudad y retorna error*/
+    if(MON && (status = addBikesMon(montreal, bikesCsv))) != OK) {
+>>>>>>> Stashed changes
         freeCity(montreal);
         return status;
     }
@@ -119,7 +127,7 @@ int addStationsMon(cityADT city, FILE * stationsCsv){
 
     char aux[MAX_TOKENS];
 
-    /* Se leen y almacenan las estaciones, omitiendo la primera linea con el encabezado */
+    /* Se leen y almacenan las estaciones */
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
         unsigned long stationId;
@@ -141,6 +149,8 @@ int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
 
     char aux[MAX_TOKENS];
     fgets(aux, MAX_TOKENS, stations);
+
+    //reviso que los archivos se hayan abierto correctamente
     if(MON && strcmp(aux, PRIMERA_LINEA_STATIONS_MON) != 0)
         return 0;
 
@@ -404,5 +414,44 @@ int addBikesNyc(cityADT city, FILE * bikesCsv){
             }
     }
     return OK;
+}
+
+int query5(cityADT city, int startYear, int endYear){
+
+    char * months[12] = {"January", "February", "March", "April", "May", "June",
+                         "July", "August", "September", "October", "November", "December"};
+
+    FILE * file = fopen("query5.csv", "w+");
+
+    if(file == NULL) {
+        puts("Cant create file 'query5.csv'");
+        perror("Error");
+        return CANT_CREATE_FILE;
+    }
+
+    fprintf(file, "month;loopsTop1St;loopsTop2St;loopsTop3St\n");
+
+    htmlTable table = newTable("query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
+
+    if(table == NULL) {
+        puts("Cant create file 'query5.html'");
+        perror("Error");
+        return CANT_CREATE_TABLE;
+    }
+
+    char * first, *second, *third;
+    for (int i = startYear; i <= endYear; ++i) {
+        for (int j = 0; j < MONTHS; ++j) {
+            getTop3ByMonth(j, &first, &second, &third);
+            fprintf(file, "%s;%s;%s;%s", months[j], first, second, third);
+            addHTMLRow(table, months[j], first, second, third);
+        }
+    }
+
+    closeHTMLTable(table);
+    fclose(file);
+
+    return OK;
+
 }
 

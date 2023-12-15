@@ -388,6 +388,15 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
         + getRidesBetween(ride->next, startYear, endYear);
 }
 
+void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third){
+
+    int cantTop1, cantTop2, cantTop3;
+
+
+
+}
+
+
 /*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
 // void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear){
 //     if(city->stations[stationIndex]->destiniesCount > 0){

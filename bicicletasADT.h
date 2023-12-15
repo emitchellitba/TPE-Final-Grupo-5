@@ -48,6 +48,9 @@ size_t getEndedRides(cityADT city, int dayOfWeek);
 de indice stationIndex */
 void getMostPopular(cityADT city, size_t stationIndex, size_t * ridesOut, char ** endName, int startYear, int endYear);
 
+/* Retorna en variables de salida los nombres del top 3 estaciones con mas viajes circulares
+ * en caso de que no halla 3 estaciones con mas viajes circulares, retorna "empty" en todos los campos*/
+void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third);
 
 
 #endif
