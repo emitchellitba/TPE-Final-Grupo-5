@@ -5,6 +5,11 @@
 
 #define DAYS_OF_WEEK 7
 
+typedef struct{
+    char * name;
+    size_t memberRides, casualRides;
+} tData;
+
 typedef struct cityCDT * cityADT;
 
 /* Reserva el espacio para una nueva ciudad, sin estaciones ni viajes */
