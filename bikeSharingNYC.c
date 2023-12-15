@@ -13,6 +13,7 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
 #define SIZE_DATE 18
+#define END_OF_TOKEN ";"
 
 int checkParams(char* bikes, char*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -75,9 +76,9 @@ int main(int argc, char * argv[]){
         if(first) {
             first = 0;
         } else {
-            name = strtok(aux, ";");
+            name = strtok(aux, END_OF_TOKEN);
             for(int i = 0; i < 2; i++)
-                strtok(NULL, ";");                  //ignoramos la longitud y la latitud
+                strtok(NULL, END_OF_TOKEN);                  //ignoramos la longitud y la latitud
             stationId = atoi(strtok(NULL, "\n"));
             if(addStation(nyc, name, stationId) == ENOMEM) {
                 freeCity(nyc);
@@ -99,11 +100,11 @@ int main(int argc, char * argv[]){
         if(first) {
             first = 0;
         } else {
-            readDate(strtok(aux, ";"), &startDate);
-            startStationId = atoi(strtok(NULL, ";"));
-            readDate(strtok(NULL, ";"), &endDate);
-            endStationId = atoi(strtok(NULL, ";"));
-            strtok(NULL, ";"); //ignoramos rideable
+            readDate(strtok(aux, END_OF_TOKEN), &startDate);
+            startStationId = atoi(strtok(NULL, END_OF_TOKEN));
+            readDate(strtok(NULL, END_OF_TOKEN), &endDate);
+            endStationId = atoi(strtok(NULL, END_OF_TOKEN));
+            strtok(NULL, END_OF_TOKEN); //ignoramos rideable
             memberState = strtok(NULL, "\n");
             if(addRide(nyc, startStationId, startDate, endDate, endStationId, strcmp("member", memberState) == 0) == ENOMEM) {
                 freeCity(nyc);

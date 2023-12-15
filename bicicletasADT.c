@@ -9,6 +9,7 @@
 
 
 #define BLOCK 50
+#define NOT_FOUND -1
 
 /* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
 información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
@@ -25,15 +26,18 @@ typedef struct ride{
 
 typedef struct destiny {
     char * name;
+    size_t id;
     tRide * rides;
+    struct destiny * next;
 } tDestiny;
 
 typedef struct station{
     struct tm oldest_date;
     char * name;
     char * oldestDestinyName;
+    tRide * circularRides;
     tDestiny * destinies;
-    size_t destiniesCount, id, memberRides, casualRides;
+    size_t id, memberRides, casualRides;
 } tStation;
 
 typedef struct cityCDT{
@@ -61,9 +65,9 @@ cityADT newCity(void){
 int addStation(cityADT city, char * name, size_t id){
 
     /* Primero nos fijamos que no exista, recorriendo el vector */
+    bool orderFlag = 1;
     bool found = 0;
     size_t i;
-    bool orderFlag = 1;
     for(i = 0; i < city->stationCount && !found; i++){
         if(city->stations[i]->id == id)
             found = 1;
@@ -90,8 +94,7 @@ int addStation(cityADT city, char * name, size_t id){
         }
         strcpy(city->stations[i]->name, name);
         city->stations[i]->id = id;
-        city->stations[i]->destinies = NULL;
-        city->stations[i]->destiniesCount = 0;
+        city->stations[i]->destinies = city->stations[i]->circularRides = NULL;
         city->stations[i]->memberRides = city->stations[i]->casualRides = 0;
         city->stations[i]->oldestDestinyName = NULL;
         city->stationCount++;
@@ -118,16 +121,67 @@ int dateCompare(struct tm d1, struct tm d2){
     return diff;
 }
 
-/*Recibe dos punteros a estacion y compara sus id's*/
+/* Recibe dos punteros a estacion y compara sus id's. Retorna un numero positivo si el primero
+es mayor, negativo si es menor y 0 si son iguales */
 size_t compareID(tStation * station1, tStation * station2) {
     return station1->id - station2->id;
+}
+
+/* Busca una estacion segun su id en un vector de estaciones con busqueda binaria. 
+Retorna el indice de la estacion si lo encuentra, NOT_FOUND si no */
+static
+size_t searchId(tStation ** stations, size_t stationCount, size_t id){
+    size_t inf, half, sup;
+    inf = 0;
+    sup = stationCount - 1;
+    half = (inf + sup) / 2;
+
+    while(inf <= sup){
+        if(stations[half]->id == id){
+            return half;
+        }
+        if(stations[half]->id < id){
+            inf = half + 1;
+        }
+        else{
+            sup = half - 1;
+        }
+        half = (inf + sup) / 2;
+    }
+    return NOT_FOUND;
+}
+
+/* Si no esta, lo agrego y me guardo esa direc; si lo encuentro, me guardo la direc de donde lo encuentro */
+tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny ** destinyOut){
+    if(destiny == NULL || destiny->id > id){
+        tDestiny * new = malloc(sizeof(tDestiny));
+        if(new == NULL || errno == ENOMEM)
+            return destiny;
+        new->id = id;
+        new->name = malloc(strlen(endName) + 1);
+        if(new->name == NULL || errno == ENOMEM) {
+            free(new);
+            return destiny;
+        }
+        strcpy(new->name, endName);
+        new->rides = NULL;
+        new->next = destiny;
+        *destinyOut = new;
+        return new;
+    }
+    if(destiny->id == id){
+        *destinyOut = destiny;
+        return destiny;
+    }
+    destiny->next = checkDestiny(destiny->next, id, endName, destinyOut);
+    return destiny;
 }
 
 /* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
 se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    if(ride == NULL || dateCompare(start_date, ride->start_date)){ // tendria q ser !dateCompare(start_date, ride->start_date)?
+    if(ride == NULL || dateCompare(start_date, ride->start_date) > 0){
         tRide * new = malloc(sizeof(tRide));          
         // Si no hay espacio, no se agrega
         if(new == NULL || errno == ENOMEM)
@@ -143,68 +197,41 @@ tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
 
 
 int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
-    tStation * station;
-    size_t i;
-    char * endName;
-    bool foundStart = 0;
-    bool foundEnd = 0;
-    
+    errno = 0;
     /*Si el vector no está ordenado, lo ordenamos*/
     if(!city->ordered) {
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareID);
         city->ordered = 1;
     }
 
-    /* Revisamos que las estaciones de origen y final existan. Si las encontramos, nos guardamos los datos necesarios */
-    for(i = 0; i < city->stationCount && (!foundStart || !foundEnd); i++){
-        if(city->stations[i]->id == startStationId){
-            station = &(city->stations[i]);
-            foundStart = 1;
-        }
-        if(city->stations[i]->id == endStationId){
-            endName = city->stations[i]->name;                       
-            foundEnd = 1;
-        }
+    /* Revisamos que las estaciones de origen y fin existan. Si encontramos ambas, nos guardamos los datos necesarios */
+    size_t startIdx, endIdx;
+    tStation * station;
+    char * endName;
+    
+    if(startIdx = searchId(city->stations, city->stationCount, startStationId) == NOT_FOUND){
+        return 0;
     }
-    // Si ambas existen, agrego el viaje
-    if(foundStart && foundEnd){
-        
-        // Si el destino ya existe dentro de la estacion de origen, lo agrego a esa lista
-        bool foundDestiny = 0;
-        for(i = 0; i < station->destiniesCount && !foundDestiny; i++){
-            if(strcmp(station->destinies[i].name, endName) == 0){
-                station->destinies[i].rides = addRideRec(station->destinies[i].rides, start_date, end_date);
-                foundDestiny = 1;
-            }
-        }
+    if((endIdx = searchId(city->stations, city->stationCount, endStationId)) == NOT_FOUND){
+        return 0;
+    }
 
-        // Si no, creo un destino nuevo e inicializo la lista
-        if(!foundDestiny){
-            if(i % BLOCK == 0){
-                tDestiny * aux = station->destinies;
-                aux = realloc(aux, (i + BLOCK) * sizeof(tDestiny));
-                if(aux == NULL || errno == ENOMEM) {
-                    return errno;
-                }
-                station->destinies = aux;
-            }
-            station->destinies[i].name = malloc(strlen(endName) + 1);
-            if(station->destinies[i].name == NULL || errno == ENOMEM) {
-                return errno;
-            }
-            strcpy(station->destinies[i].name, endName); 
-            station->destinies[i].rides = addRideRec(NULL, start_date, end_date);
-            station->destiniesCount++;
+    station = city->stations[startIdx];
+    endName = city->stations[endIdx]->name; 
+
+    if(startStationId != endStationId){
+        tDestiny * destiny;
+        checkDestiny(station->destinies, endStationId, endName, &destiny);
+        if(errno == ENOMEM){
+            return errno;
         }
-        
-        /* Si no se pudo agregar el viaje, sea en destino anterior o nuevo, se retorna ENOMEM */
+        destiny->rides = addRideRec(destiny->rides, start_date, end_date);
         if(errno == ENOMEM)
             return errno;
         
         /* Nos guardamos el viaje mas viejo para el query 3
-        Chequeo que el viaje no sea circular. Si no lo es, lo comparo con el mas viejo registrado (a menos que sea el primero)
-         y si es anterior lo reemplazo */
-        if(startStationId != endStationId && ((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0)){
+        Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
+        if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
             char * aux = station->oldestDestinyName;
             aux = realloc(station->oldestDestinyName, strlen(endName) + 1);
             if(aux == NULL || errno == ENOMEM) {
@@ -214,19 +241,24 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             strcpy(station->oldestDestinyName, endName);
             station->oldest_date = start_date;
         }
-
-        /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
-        if(isMember)
-            station->memberRides++;
-        else
-            station->casualRides++;
-    
-        /* Para el query 2, registramos que dia de la semana se inicio y termino el viaje */
-        mktime(&start_date);
-        city->startedRidesPerDay[start_date.tm_wday]++;
-        mktime(&end_date);
-        city->endedRidesPerDay[end_date.tm_wday]++;
+    }else{
+        station->circularRides = addRideRec(station->circularRides, start_date, end_date);
+        if(errno == ENOMEM)
+            return errno;
     }
+
+    /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
+    if(isMember)
+        station->memberRides++;
+    else
+        station->casualRides++;
+    
+    /* Para el query 2, registramos que dia de la semana se inicio y termino el viaje */
+    mktime(&start_date);
+    city->startedRidesPerDay[start_date.tm_wday]++;
+    mktime(&end_date);
+    city->endedRidesPerDay[end_date.tm_wday]++;
+
     return errno;
 }
 
@@ -239,15 +271,21 @@ void freeRides(tRide * ride){
     free(ride);
 }
 
+static 
+void freeDestinies(tDestiny * destiny){
+    if(destiny == NULL)
+        return;
+    freeDestinies(destiny->next);
+    freeRides(destiny->rides);
+    free(destiny->name);
+    free(destiny);
+}
 
 void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
         free(city->stations[i]->name);
         free(city->stations[i]->oldestDestinyName);
-        for(int j = 0; j < city->stations[i]->destiniesCount; j++){
-            free(city->stations[i]->destinies[j].name);
-            freeRides(city->stations[i]->destinies[j].rides);
-        }free(city->stations[i]->destinies);
+        freeDestinies(city->stations[i]->destinies);
     }
     free(city->stations);
     free(city);
