@@ -443,15 +443,15 @@ int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear)
         return 0;
     }
     if((startYear == 0 || ride->start_date.tm_year >= startYear) && (endYear == 0 || ride->start_date.tm_year <= endYear)){
-        return getRidesBetween(ride->nextLeft, startYear, endYear) + getRidesBetween(ride->nextRight, startYear, endYear) +
+        return getCircularRidesBetween(ride->nextLeft, month, startYear, endYear) + getCircularRidesBetween(ride->nextRight, month, startYear, endYear) +
             ((startYear == 0 || ride->end_date.tm_year >= startYear) && (endYear == 0 || ride->end_date.tm_year <= endYear) &&
             ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month);
         // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
     }
     if(ride->start_date.tm_year > endYear){
-        return getRidesBetween(ride->nextLeft, startYear, endYear);
+        return getCircularRidesBetween(ride->nextLeft, month, startYear, endYear);
     }
-    return getRidesBetween(ride->nextRight, startYear, endYear);
+    return getCircularRidesBetween(ride->nextRight, month, startYear, endYear);
 }
 
 void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
