@@ -23,13 +23,13 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
     #undef FIRST_LINE_BIKES
     #undef FIRST_LINE_STATIONS
     #define FIRST_LINE_BIKES "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual\n"
-    #define FIRST_LINE_STATIONS "station_name;latitude;longitude;id\r\n"
+    #define FIRST_LINE_STATIONS "station_name;latitude;longitude;id\n"
 #endif
 #ifdef MON
     #undef FIRST_LINE_BIKES
     #undef FIRST_LINE_STATIONS
     #define FIRST_LINE_BIKES "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member\n"
-    #define FIRST_LINE_STATIONS "pk;name;latitude;longitude\r\n"
+    #define FIRST_LINE_STATIONS "pk;name;latitude;longitude\n"
 #endif
 
 
