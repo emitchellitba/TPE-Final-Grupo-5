@@ -286,6 +286,7 @@ void freeCity(cityADT city){
     for(int i = 0; i < city->stationCount; i++){
         free(city->stations[i]->name);
         free(city->stations[i]->oldestDestinyName);
+        free(city->stations[i]->mostPopName);
         freeDestinies(city->stations[i]->destinies);
         free(city->stations[i]);
     }
