@@ -33,8 +33,8 @@ typedef struct destiny {
     char * name;
     size_t id;
     tRide * rides;
-    struct destiny * nextRight;
     struct destiny * nextLeft;
+    struct destiny * nextRight;
 } tDestiny;
 
 typedef struct station{
@@ -61,7 +61,7 @@ cityADT newCity(void){
 
 
 int addStation(cityADT city, char * name, size_t id){
-
+    errno = 0;
     /* Primero nos fijamos que no exista, recorriendo el vector */
     bool orderFlag = idOrder;
     bool found = 0;
