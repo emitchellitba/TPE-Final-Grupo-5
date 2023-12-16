@@ -392,6 +392,7 @@ tMostPopular getMostPopular(tStation * station, int startYear, int endYear){
                 maxRides = rides;
                 maxName = aux->name;
             }
+            aux = aux->next;
         }
       
         mostPopular.cantRides = maxRides;
