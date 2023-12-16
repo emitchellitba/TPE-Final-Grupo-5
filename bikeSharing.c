@@ -69,10 +69,14 @@ int main(int argc, char * argv[]){
     FILE * stationsCsv = fopen(stations, "r");
     /* Se chequea que los parametros sean los esperados */
     if((status = checkParams(bikesCsv, stationsCsv, startYear, endYear)) != OK) {
-        if(status == INVALID_ARG)
+        if(status == INVALID_ARG) {
             fprintf(stderr, "Invalid arguments");
-        if(status == CANT_ARG_ERROR)
+            return INVALID_ARG;
+        }
+        if(status == CANT_ARG_ERROR) {
             fprintf(stderr, "Invalid amount of arguments");
+            return INVALID_ARG;
+        }
     }
 
     cityADT city = newCity();
@@ -154,7 +158,7 @@ int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
     if(strcmp(aux, FIRST_LINE_STATIONS) != 0)
         return INVALID_ARG;
     fgets(aux, MAX_TOKENS, bikes);
-    if(strcmp(aux, FIRST_LINE_STATIONS) != 0)
+    if(strcmp(aux, FIRST_LINE_BIKES) != 0)
         return INVALID_ARG;
 
     if(endYear < 0 || startYear < 0)
