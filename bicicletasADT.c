@@ -328,10 +328,10 @@ tData next(cityADT city) {
 static
 int compareTotalRides(const void * station1, const void * station2){
     size_t total1, total2;
-    if((total1 = (*((tStation**)station1))->casualRides + (*((tStation**)station1))->memberRides) == (total2 = (*((tStation**)station2))->casualRides + (*((tStation**)station2))->memberRides)){
-        return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name);
+    if((total1 = (*((tStation**)station1))->casualRides + (*((tStation**)station1))->memberRides) != (total2 = (*((tStation**)station2))->casualRides + (*((tStation**)station2))->memberRides)){
+        return total2 - total1;
     }
-    return total1 - total2;
+    return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name);
 }
 
 void orderByRides(cityADT city){
