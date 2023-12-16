@@ -16,10 +16,22 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define END_OF_LINE "\n"
 #define SIZE_DATE 18
 #define MONTHS 12
-#define FIRST_LINE_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual\n"
-#define FIRST_LINE_STATIONS_NYC "station_name;latitude;longitude;id\r\n"
-#define FIRST_LINE_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member\n"
-#define FIRST_LINE_STATIONS_MON "pk;name;latitude;longitude\r\n"
+#define FIRST_LINE_BIKES ""
+#define FIRST_LINE_STATIONS ""
+
+#ifdef NYC
+    #undef FIRST_LINE_BIKES
+    #undef FIRST_LINE_STATIONS
+    #define FIRST_LINE_BIKES "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual\n"
+    #define FIRST_LINE_STATIONS "station_name;latitude;longitude;id\r\n"
+#endif
+#ifdef MON
+    #undef FIRST_LINE_BIKES
+    #undef FIRST_LINE_STATIONS
+    #define FIRST_LINE_BIKES "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member\n"
+    #define FIRST_LINE_STATIONS "pk;name;latitude;longitude\r\n"
+#endif
+
 
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -136,15 +148,13 @@ void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, 
 
 
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
-
     char aux[MAX_TOKENS];
 
     fgets(aux, MAX_TOKENS, stations);
-    if((MON && strcmp(aux, FIRST_LINE_STATIONS_MON) != 0) || (NYC && strcmp(aux, FIRST_LINE_STATIONS_NYC) != 0))
+    if(strcmp(aux, FIRST_LINE_STATIONS) != 0)
         return INVALID_ARG;
-
     fgets(aux, MAX_TOKENS, bikes);
-    if((MON && strcmp(aux, FIRST_LINE_BIKES_MON) != 0) || (NYC && strcmp(aux, FIRST_LINE_BIKES_NYC) != 0))
+    if(strcmp(aux, FIRST_LINE_STATIONS) != 0)
         return INVALID_ARG;
 
     if(endYear < 0 || startYear < 0)
@@ -152,9 +162,9 @@ int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
     if(startYear != 0 && endYear != 0)
         if(endYear < startYear)
             return INVALID_ARG;
-
     return OK;
 }
+
 /* Genera un string a partir de una fecha en struct tm */
 void readDate(char * s, struct tm * date) {
     sscanf(s, "%d-%d-%d %d:%d:%d", &(date->tm_year), &(date->tm_mon), &(date->tm_mday), &(date->tm_hour), &(date->tm_min), &(date->tm_sec));
