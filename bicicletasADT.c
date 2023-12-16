@@ -368,8 +368,7 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
     if(ride == NULL || (endYear != 0 && ride->start_date.tm_year > endYear)){
         return 0;
     }
-    return (startYear == 0 || (ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
-        + getRidesBetween(ride->next, startYear, endYear);
+    return (startYear == 0 || ride->start_date.tm_year >= startYear) + getRidesBetween(ride->next, startYear, endYear);
 }
 
 
@@ -424,7 +423,7 @@ int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear)
     // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
     return getCircularRidesBetween(ride->next, month, startYear, endYear) +
            (ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month && 
-           (startYear == 0 || ((ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))));
+           (startYear == 0 || ride->start_date.tm_year >= startYear));
 
 }
 
