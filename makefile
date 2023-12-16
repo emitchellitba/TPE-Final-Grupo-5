@@ -10,10 +10,10 @@ all: makeExecutables clean
 makeExecutables: back makeExecutableNYC makeExecutableMON
 
 makeExecutableNYC:
-	$(COMPILER) -o $(OUTPUT_FILE_NYC) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DMON=0 -DNYC=1
+	$(COMPILER) -o $(OUTPUT_FILE_NYC) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DNYC
 
 makeExecutableMON:
-	$(COMPILER) -o $(OUTPUT_FILE_MON) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DMON=1 -DNYC=0
+	$(COMPILER) -o $(OUTPUT_FILE_MON) $(FRONT) bicicletasADT.o htmlTable.o $(CFLAGS) -DMON
 
 back: bicicletasADT.o htmlTable.o
 
