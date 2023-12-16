@@ -25,7 +25,8 @@ de agregado y hacer las funciones que nos devuelvan los indices ordenados segun 
 
 typedef struct ride{
     struct tm start_date, end_date;
-    struct ride * next;
+    struct ride * nextLeft;
+    struct ride * nextRight;
 } tRide;
 
 typedef struct destiny {
@@ -206,17 +207,21 @@ int dateToDayOfWeek(int year, int month, int day) {
 se guardan ambos, en orden de agregado */
 static
 tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    if(ride == NULL || dateCompare(start_date, ride->start_date) > 0){
+    if(ride == NULL){
         tRide * new = malloc(sizeof(tRide));          
         // Si no hay espacio, no se agrega
         if(new == NULL || errno == ENOMEM)
             return ride; 
         new->start_date = start_date;
         new->end_date = end_date;
-        new->next = ride;
+        new->nextLeft = new->nextRight = NULL;
         return new;
     }
-    ride->next = addRideRec(ride->next, start_date, end_date);
+    if(dateCompare(start_date, ride->start_date) <= 0){
+        ride->nextLeft = addRideRec(ride->nextLeft, start_date, end_date);
+        return ride;
+    }
+    ride->nextRight = addRideRec(ride->nextRight, start_date, end_date);
     return ride;
 }
 
@@ -281,7 +286,8 @@ static
 void freeRides(tRide * ride){
     if(ride == NULL)
         return;
-    freeRides(ride->next);
+    freeRides(ride->nextLeft);
+    freeRides(ride->nextRight);
     free(ride);
 }
 
@@ -372,10 +378,17 @@ size_t getEndedRides(cityADT city, int index) {
 /*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
 static
 size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){ 
-    if(ride == NULL || (endYear != 0 && ride->start_date.tm_year > endYear)){
+    if(ride == NULL){
         return 0;
     }
-    return (startYear == 0 || ride->start_date.tm_year >= startYear) + getRidesBetween(ride->next, startYear, endYear);
+    if((startYear == 0 || ride->start_date.tm_year >= startYear) && (endYear == 0 || ride->start_date.tm_year <= endYear)){
+        return getRidesBetween(ride->nextLeft, startYear, endYear) + getRidesBetween(ride->nextRight, startYear, endYear) +
+            ((startYear == 0 || ride->end_date.tm_year >= startYear) && (endYear == 0 || ride->end_date.tm_year <= endYear));
+    }
+    if(ride->start_date.tm_year > endYear){
+        return getRidesBetween(ride->nextLeft, startYear, endYear);
+    }
+    return getRidesBetween(ride->nextRight, startYear, endYear);
 }
 
 
@@ -426,15 +439,19 @@ tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
 
 static 
 int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
-
-    if(ride == NULL || (endYear != 0 && ride->start_date.tm_year > endYear) || (ride->start_date.tm_year == endYear && ride->start_date.tm_mon > month))
+     if(ride == NULL){
         return 0;
-
-    // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
-    return getCircularRidesBetween(ride->next, month, startYear, endYear) +
-           (ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month && 
-           (startYear == 0 || ride->start_date.tm_year >= startYear));
-
+    }
+    if((startYear == 0 || ride->start_date.tm_year >= startYear) && (endYear == 0 || ride->start_date.tm_year <= endYear)){
+        return getRidesBetween(ride->nextLeft, startYear, endYear) + getRidesBetween(ride->nextRight, startYear, endYear) +
+            ((startYear == 0 || ride->end_date.tm_year >= startYear) && (endYear == 0 || ride->end_date.tm_year <= endYear) &&
+            ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month);
+        // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
+    }
+    if(ride->start_date.tm_year > endYear){
+        return getRidesBetween(ride->nextLeft, startYear, endYear);
+    }
+    return getRidesBetween(ride->nextRight, startYear, endYear);
 }
 
 void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
