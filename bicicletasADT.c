@@ -426,7 +426,6 @@ int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear)
 }
 
 void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
-
     if(month < 0 || month > 11)
         return;
 
@@ -459,13 +458,13 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     }
 
     if(cantTop1 == 0 || cantTop2 == 0 || cantTop3 == 0){
-        strcpy(*first, "Empty");
-        strcpy(*second, "Empty");
-        strcpy(*third, "Empty");
+        *first = "Empty";
+        *second = "Empty";
+        *third = "Empty";
     }else{
-        strcpy(*first, top1);
-        strcpy(*second, top2);
-        strcpy(*third, top3);
+        *first = top1;
+        *second = top2;
+        *third = top3;
     }
 
 }
