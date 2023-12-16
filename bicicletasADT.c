@@ -402,9 +402,7 @@ tMostPopular getMostPopular(tStation * station, int startYear, int endYear){
         char * maxName = station->destinies->name;
 
         /*Se recorren todos los destinos y se compara con el máximo registrado*/
-        while(aux != NULL){
-            station->destinies = getMostPopularRec(station->destinies, startYear, endYear, &maxName, maxRides);
-        }
+        getMostPopularRec(station->destinies, startYear, endYear, &maxName, maxRides);
       
         mostPopular.cantRides = maxRides;
         mostPopular.endName = maxName;
