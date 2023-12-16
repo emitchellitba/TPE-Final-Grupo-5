@@ -234,9 +234,9 @@ int query2(cityADT city){
         tData data = next(city);
         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
         if(data.oldestDestinyName != NULL){
-            fprintf(file, "%s;%s;%d/%d/%d %2d:%2d\n", data.name, data.oldestDestinyName, data.oldest_date.tm_mday, data.oldest_date.tm_mon,
+            fprintf(file, "%s;%s;%d/%d/%d %02d:%02d\n", data.name, data.oldestDestinyName, data.oldest_date.tm_mday, data.oldest_date.tm_mon,
                     data.oldest_date.tm_year, data.oldest_date.tm_hour, data.oldest_date.tm_min);
-            sprintf(datestr, "%d/%d/%d %2d:%2d", data.oldest_date.tm_mday, data.oldest_date.tm_mon, data.oldest_date.tm_year,
+            sprintf(datestr, "%d/%d/%d %02d:%02d", data.oldest_date.tm_mday, data.oldest_date.tm_mon, data.oldest_date.tm_year,
                     data.oldest_date.tm_hour, data.oldest_date.tm_min);
             addHTMLRow(table, data.name, data.oldestDestinyName, datestr);
         }
