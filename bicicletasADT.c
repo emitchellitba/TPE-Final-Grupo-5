@@ -354,7 +354,7 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
-tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
+tMostPopular nextMostPopular(cityADT city){
     if(!hasNext(city)) {
         exit(1);
     }
@@ -366,7 +366,7 @@ tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
     return mostPop;
 }
 
-void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
+void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third){
     if(month < 0 || month > 11)
         return;
 

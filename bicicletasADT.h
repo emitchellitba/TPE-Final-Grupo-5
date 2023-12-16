@@ -49,11 +49,11 @@ size_t getStartedRides(cityADT city, int dayOfWeek);
 /* Retorna la cantidad de viajes que se terminaron en el dia indicado por dayOfWeek */
 size_t getEndedRides(cityADT city, int dayOfWeek);
 
-tMostPopular nextMostPopular(cityADT city, int startYear, int endYear);
+tMostPopular nextMostPopular(cityADT city);
 
 /* Retorna en variables de salida los nombres del top 3 estaciones con mas viajes circulares
  * en caso de que no halla 3 estaciones con mas viajes circulares, retorna "empty" en todos los campos*/
-void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear);
+void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third);
 
 
 #endif
