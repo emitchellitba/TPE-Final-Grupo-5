@@ -138,7 +138,7 @@ void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, 
         readDate(strtok(NULL, END_OF_TOKEN), endDate);
         *endStationId = atoi(strtok(NULL, END_OF_TOKEN));
         strtok(NULL, END_OF_TOKEN); //ignoramos rideable
-        *isMember = (strcasecmp(strtok(NULL, "\n"), "member") == 0);
+        *isMember = (strcmp(strtok(NULL, "\n"), "member") == 0);
     #endif
 
     #ifdef MON
