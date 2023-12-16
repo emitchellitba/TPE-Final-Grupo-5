@@ -294,6 +294,7 @@ void freeCity(cityADT city){
         free(city->stations[i]->name);
         free(city->stations[i]->oldestDestinyName);
         freeDestinies(city->stations[i]->destinies);
+        freeRides(city->stations[i]->circularRides);
         free(city->stations[i]);
     }
     free(city->stations);
