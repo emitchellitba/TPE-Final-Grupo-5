@@ -23,16 +23,11 @@ De los vectores dinámicos, nos vamos guardando su dimension para poder recorrer
 Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico o cantidad de viajes), decidimos guardarlos por orden
 de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
 
-typedef struct ride{
-    struct tm start_date, end_date;
-    struct ride * nextLeft;
-    struct ride * nextRight;
-} tRide;
 
 typedef struct destiny {
     char * name;
     size_t id;
-    tRide * rides;
+    size_t rideCount;
     struct destiny * nextLeft;
     struct destiny * nextRight;
 } tDestiny;
@@ -41,8 +36,10 @@ typedef struct station{
     struct tm oldest_date;
     char * name;
     char * oldestDestinyName;
-    tRide * circularRides;
+    size_t monthlyCircularRides[MONTHS];
     tDestiny * destinies;
+    char * mostPopName;
+    size_t mostPopRides;
     size_t id, memberRides, casualRides;
 } tStation;
 
@@ -95,9 +92,8 @@ int addStation(cityADT city, char * name, size_t id){
         strcpy(city->stations[city->stationCount]->name, name);
         city->stations[city->stationCount]->id = id;
         city->stations[city->stationCount]->destinies = NULL;
-        city->stations[city->stationCount]->circularRides = NULL;
         city->stations[city->stationCount]->memberRides = city->stations[i]->casualRides = 0;
-        city->stations[city->stationCount]->oldestDestinyName = NULL;
+        city->stations[city->stationCount]->oldestDestinyName = city->stations[city->stationCount]->mostPopName = NULL;
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
@@ -164,7 +160,7 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
             return destiny;
         }
         strcpy(new->name, endName);
-        new->rides = NULL;
+        new->rideCount = 0;
         new->nextRight = NULL;
         new->nextLeft = NULL;
         *destinyOut = new;
@@ -195,6 +191,17 @@ void changeOldest(tStation * station, char * name, struct tm date){
     station->oldest_date = date;
 }
 
+static
+void changeMostPop(tStation * station, char * name, size_t rides){
+    char * aux = realloc(station->mostPopName, strlen(name) + 1);
+    if(aux == NULL || errno == ENOMEM) {
+        return;
+    }
+    station->mostPopName = aux;
+    strcpy(station->mostPopName, name);
+    station->mostPopRides = rides;
+}
+
 /* Usa la formula de Zeller, que usando el dia, el mes y el año que se le pasa, saca el dia de 
 la semana en el formato Lunes = 0, Martes = 1, ... Domingo = 6 */
 int dateToDayOfWeek(int year, int month, int day) {
@@ -203,29 +210,7 @@ int dateToDayOfWeek(int year, int month, int day) {
     return (dayOfWeek + 5) % 7;
 }
 
-/* Agrega viaje a la lista en orden cronológico. Si hay dos viajes que salgan al mismo momento
-se guardan ambos, en orden de agregado */
-static
-tRide * addRideRec(tRide * ride, struct tm start_date, struct tm end_date){
-    if(ride == NULL){
-        tRide * new = malloc(sizeof(tRide));          
-        // Si no hay espacio, no se agrega
-        if(new == NULL || errno == ENOMEM)
-            return ride; 
-        new->start_date = start_date;
-        new->end_date = end_date;
-        new->nextLeft = new->nextRight = NULL;
-        return new;
-    }
-    if(dateCompare(start_date, ride->start_date) <= 0){
-        ride->nextLeft = addRideRec(ride->nextLeft, start_date, end_date);
-        return ride;
-    }
-    ride->nextRight = addRideRec(ride->nextRight, start_date, end_date);
-    return ride;
-}
-
-int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember){
+int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember, int startYear, int endYear){
     errno = 0;
     /*Si el vector no está ordenado, lo ordenamos*/
     if(city->order != idOrder) {
@@ -252,8 +237,9 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         tDestiny * destiny;
         station->destinies = checkDestiny(station->destinies, endStationId, endName, &destiny);
         CHECK_ERRNO;
-        destiny->rides = addRideRec(destiny->rides, start_date, end_date);
-        CHECK_ERRNO;
+        if(start_date.tm_year >= startYear && end_date.tm_year <= endYear){
+            destiny->rideCount++;
+        }
 
         /* Nos guardamos el viaje mas viejo (no circular) para el query 3
         Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
@@ -261,9 +247,12 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             changeOldest(station, endName, start_date);
             CHECK_ERRNO;
         }
-    }else{
-        station->circularRides = addRideRec(station->circularRides, start_date, end_date);
-        CHECK_ERRNO;
+        if((station->memberRides + station->casualRides) == 0 || destiny->rideCount > station->mostPopRides){
+            changeMostPop(station, endName, destiny->rideCount);
+            CHECK_ERRNO;
+        }
+    }else if(start_date.tm_year >= startYear && end_date.tm_year <= endYear && start_date.tm_mon == end_date.tm_mon){
+        station->monthlyCircularRides[start_date.tm_mon]++;
     }
 
     /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
@@ -282,14 +271,6 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
 }
 
 
-static
-void freeRides(tRide * ride){
-    if(ride == NULL)
-        return;
-    freeRides(ride->nextLeft);
-    freeRides(ride->nextRight);
-    free(ride);
-}
 
 static 
 void freeDestinies(tDestiny * destiny){
@@ -297,7 +278,6 @@ void freeDestinies(tDestiny * destiny){
         return;
     freeDestinies(destiny->nextLeft);
     freeDestinies(destiny->nextRight);
-    freeRides(destiny->rides);
     free(destiny->name);
     free(destiny);
 }
@@ -307,7 +287,6 @@ void freeCity(cityADT city){
         free(city->stations[i]->name);
         free(city->stations[i]->oldestDestinyName);
         freeDestinies(city->stations[i]->destinies);
-        freeRides(city->stations[i]->circularRides);
         free(city->stations[i]);
     }
     free(city->stations);
@@ -374,84 +353,16 @@ size_t getEndedRides(cityADT city, int index) {
     return city->endedRidesPerDay[index];
 }
 
-
-/*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
-static
-size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){ 
-    if(ride == NULL){
-        return 0;
-    }
-    if((startYear == 0 || ride->start_date.tm_year >= startYear) && (endYear == 0 || ride->start_date.tm_year <= endYear)){
-        return getRidesBetween(ride->nextLeft, startYear, endYear) + getRidesBetween(ride->nextRight, startYear, endYear) +
-            ((startYear == 0 || ride->end_date.tm_year >= startYear) && (endYear == 0 || ride->end_date.tm_year <= endYear));
-    }
-    if(ride->start_date.tm_year > endYear){
-        return getRidesBetween(ride->nextLeft, startYear, endYear);
-    }
-    return getRidesBetween(ride->nextRight, startYear, endYear);
-}
-
-
-void getMostPopularRec(tDestiny * destiny, int startYear, int endYear, char ** maxName, size_t * maxRides) {
-    if(destiny == NULL)
-        return;
-    getMostPopularRec(destiny->nextLeft, startYear, endYear, maxName, maxRides);
-    getMostPopularRec(destiny->nextRight, startYear, endYear, maxName, maxRides);
-    size_t rides =  getRidesBetween(destiny->rides, startYear, endYear);
-    if(rides > *maxRides || (rides == *maxRides && strcasecmp(*maxName, destiny->name) > 0)) {
-        *maxRides = rides;
-        *maxName = destiny->name;
-    }
-}
-
-/*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
-static
-tMostPopular getMostPopular(tStation * station, int startYear, int endYear){
-    tMostPopular mostPopular;
-    mostPopular.name = station->name;
-    if(station->destinies != NULL){
-        /*Se setean las variables con los valores del primer destino*/
-        size_t maxRides = getRidesBetween(station->destinies->rides, startYear, endYear);
-        char * maxName = station->destinies->name;
-
-        /*Se recorren todos los destinos y se compara con el máximo registrado*/
-        getMostPopularRec(station->destinies, startYear, endYear, &maxName, &maxRides);
-      
-        mostPopular.cantRides = maxRides;
-        mostPopular.endName = maxName;
-    }else{
-         /*Si no llega a haber destinos se inicializan en 0 ambas variables*/
-        mostPopular.cantRides = 0;
-        mostPopular.endName = NULL;
-    }
-    return mostPopular;
-}
-
 tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
     if(!hasNext(city)) {
         exit(1);
     }
-    tMostPopular aux = getMostPopular(city->stations[city->iter], startYear, endYear);
+    tMostPopular mostPop;
+    mostPop.name = city->stations[city->iter]->name;
+    mostPop.endName = city->stations[city->iter]->mostPopName;
+    mostPop.cantRides = city->stations[city->iter]->mostPopRides;
     city->iter++;
-    return aux;
-}
-
-
-static 
-int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
-     if(ride == NULL){
-        return 0;
-    }
-    if((startYear == 0 || ride->start_date.tm_year >= startYear) && (endYear == 0 || ride->start_date.tm_year <= endYear)){
-        return getCircularRidesBetween(ride->nextLeft, month, startYear, endYear) + getCircularRidesBetween(ride->nextRight, month, startYear, endYear) +
-            ((startYear == 0 || ride->end_date.tm_year >= startYear) && (endYear == 0 || ride->end_date.tm_year <= endYear) &&
-            ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month);
-        // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
-    }
-    if(ride->start_date.tm_year > endYear){
-        return getCircularRidesBetween(ride->nextLeft, month, startYear, endYear);
-    }
-    return getCircularRidesBetween(ride->nextRight, month, startYear, endYear);
+    return mostPop;
 }
 
 void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
@@ -462,7 +373,7 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     char * top1, *top2, *top3;
 
     for (int i = 0; i < city->stationCount; ++i) {
-        int cantAux = getCircularRidesBetween(city->stations[i]->circularRides, month, startYear, endYear);
+        int cantAux = city->stations[i]->monthlyCircularRides[month];
         char * aux = city->stations[i]->name;
 
         if(cantAux > 0){
@@ -485,7 +396,6 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         }
 
     }
-
     if(cantTop1 == 0 || cantTop2 == 0 || cantTop3 == 0){
         *first = "Empty";
         *second = "Empty";

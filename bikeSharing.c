@@ -15,7 +15,6 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define END_OF_TOKEN ";"
 #define END_OF_LINE "\n"
 #define SIZE_DATE 18
-#define MONTHS 12
 #define FIRST_LINE_BIKES ""
 #define FIRST_LINE_STATIONS ""
 
@@ -98,7 +97,7 @@ int main(int argc, char * argv[]){
     int isMember;
     while(fgets(aux, MAX_TOKENS, bikesCsv) != NULL) {
         getRide(aux, &startStationId, &startDate, &endDate, &endStationId, &isMember);
-        if (addRide(city, startStationId, startDate, endDate, endStationId, isMember) == ENOMEM) {
+        if (addRide(city, startStationId, startDate, endDate, endStationId, isMember, startYear, endYear) == ENOMEM) {
             perror("Error. Can't allocate destiny/ride");
             return NO_MEMORY;
         }

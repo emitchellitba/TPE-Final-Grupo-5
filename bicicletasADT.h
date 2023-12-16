@@ -4,6 +4,7 @@
 #include <time.h>
 
 #define DAYS_OF_WEEK 7
+#define MONTHS 12
 
 typedef struct{
     char * name;
@@ -27,7 +28,7 @@ cityADT newCity(void);
 int addStation(cityADT city, char * name, size_t id);
 
 /* Agrega un viaje con los datos dados. Si las estaciones de incio o fin no existen, se ignora el viaje */
-int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember);
+int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember, int startYear, int endYear);
 
 /* Se libera la memoria reservada */
 void freeCity(cityADT city);
