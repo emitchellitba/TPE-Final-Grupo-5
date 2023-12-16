@@ -123,7 +123,7 @@ int dateCompare(struct tm d1, struct tm d2){
 /* Recibe dos punteros a estacion y compara sus id's. Retorna un numero positivo si el primero
 es mayor, negativo si es menor y 0 si son iguales */
 int compareID(const void * station1, const void * station2) {
-    return ((tStation*)station1)->id - ((tStation*)station2)->id;
+    return (*((tStation**)station1))->id - (*((tStation**)station2))->id;
 }
 
 /* Busca una estacion segun su id en un vector de estaciones con busqueda binaria. 
@@ -294,6 +294,7 @@ void freeCity(cityADT city){
         free(city->stations[i]->name);
         free(city->stations[i]->oldestDestinyName);
         freeDestinies(city->stations[i]->destinies);
+        free(city->stations[i]);
     }
     free(city->stations);
     free(city);
@@ -326,8 +327,8 @@ tData next(cityADT city) {
 static
 int compareTotalRides(const void * station1, const void * station2){
     size_t total1, total2;
-    if((total1 = ((tStation*)station1)->casualRides + ((tStation*)station1)->memberRides) == (total2 = ((tStation*)station2)->casualRides + ((tStation*)station2)->memberRides)){
-        return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name);
+    if((total1 = (*((tStation**)station1))->casualRides + (*((tStation**)station1))->memberRides) == (total2 = (*((tStation**)station2))->casualRides + (*((tStation**)station2))->memberRides)){
+        return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name);
     }
     return total1 - total2;
 }
@@ -341,7 +342,7 @@ void orderByRides(cityADT city){
 
 static
 int compareAlph(const void * station1, const void * station2){
-    return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name); 
+    return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name); 
 }
 
 void orderByAlph(cityADT city){
@@ -426,7 +427,6 @@ int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear)
 }
 
 void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char ** third, int startYear, int endYear){
-
     if(month < 0 || month > 11)
         return;
 
@@ -459,13 +459,13 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     }
 
     if(cantTop1 == 0 || cantTop2 == 0 || cantTop3 == 0){
-        strcpy(*first, "Empty");
-        strcpy(*second, "Empty");
-        strcpy(*third, "Empty");
+        *first = "Empty";
+        *second = "Empty";
+        *third = "Empty";
     }else{
-        strcpy(*first, top1);
-        strcpy(*second, top2);
-        strcpy(*third, top3);
+        *first = top1;
+        *second = top2;
+        *third = top3;
     }
 
 }
