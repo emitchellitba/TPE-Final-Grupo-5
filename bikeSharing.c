@@ -15,10 +15,10 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define END_OF_TOKEN ";"
 #define SIZE_DATE 18
 #define MONTHS 12
-#define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual"
-#define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id"
-#define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member"
-#define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude"
+#define PRIMERA_LINEA_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual\n"
+#define PRIMERA_LINEA_STATIONS_NYC "station_name;latitude;longitude;id\n"
+#define PRIMERA_LINEA_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member\n"
+#define PRIMERA_LINEA_STATIONS_MON "pk;name;latitude;longitude\n"
 
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -104,7 +104,6 @@ int addStationsMON(cityADT city, FILE * stationsCsv){
         char * name;
         unsigned long stationId;
 
-        stationId = atoi(strtok(aux, END_OF_TOKEN));
         stationId = atoi(strtok(aux, END_OF_TOKEN));
         name = strtok(NULL, END_OF_TOKEN);
         if(addStation(city, name, stationId) == ENOMEM) {

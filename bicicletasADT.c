@@ -75,28 +75,32 @@ int addStation(cityADT city, char * name, size_t id){
 
     /* Si no esta, se crea */
     if(!found){
-        if(i % BLOCK == 0){
-            tStation ** aux = city->stations;
-            aux = realloc(aux, (i + BLOCK) * sizeof(tStation *));
+        if(city->stationCount % BLOCK == 0){
+            tStation ** aux1 = city->stations;
+            aux1 = realloc(aux1, (city->stationCount + BLOCK) * sizeof(tStation *));
             CHECK_ERRNO;
-            city->stations = aux;
+            city->stations = aux1;
         }
+        tStation * aux2 = malloc(sizeof(tStation));
+        CHECK_ERRNO;
+        city->stations[city->stationCount] = aux2;
+
         int len = strlen(name) + 1;
-        city->stations[i]->name = malloc(len);
-        if(city->stations[i]->name == NULL || errno == ENOMEM) {
+        city->stations[city->stationCount]->name = malloc(len);
+        if(city->stations[city->stationCount]->name == NULL || errno == ENOMEM) {
             return errno;
         }
-        strcpy(city->stations[i]->name, name);
-        city->stations[i]->id = id;
-        city->stations[i]->destinies = NULL;
-        city->stations[i]->circularRides = NULL;
-        city->stations[i]->memberRides = city->stations[i]->casualRides = 0;
-        city->stations[i]->oldestDestinyName = NULL;
+        strcpy(city->stations[city->stationCount]->name, name);
+        city->stations[city->stationCount]->id = id;
+        city->stations[city->stationCount]->destinies = NULL;
+        city->stations[city->stationCount]->circularRides = NULL;
+        city->stations[city->stationCount]->memberRides = city->stations[i]->casualRides = 0;
+        city->stations[city->stationCount]->oldestDestinyName = NULL;
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
-        if(!orderFlag)
-            city->order = orderFlag; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
+        if(orderFlag != idOrder)
+            city->order = noOrder; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
     }
     return !found;
 }
@@ -329,8 +333,10 @@ int compareTotalRides(const void * station1, const void * station2){
 }
 
 void orderByRides(cityADT city){
-    qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
-    city->order = ridesOrder;
+    if(city->order != ridesOrder){    
+        qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
+        city->order = ridesOrder;
+    }
 }
 
 static
@@ -339,8 +345,10 @@ int compareAlph(const void * station1, const void * station2){
 }
 
 void orderByAlph(cityADT city){
-    qsort(city->stations, city->stationCount, sizeof(tStation *), compareAlph);
-    city->order = alphOrder;
+    if(city->order != alphOrder){
+        qsort(city->stations, city->stationCount, sizeof(tStation *), compareAlph);
+        city->order = alphOrder;
+    }
 }
 
 size_t getStartedRides(cityADT city, int index) {
