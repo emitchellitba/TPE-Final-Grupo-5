@@ -379,7 +379,7 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
 }
 
 
-void getMostPopularRec(tDestiny * destiny, int startYear, int endYear, char ** maxName, int * maxRides) {
+void getMostPopularRec(tDestiny * destiny, int startYear, int endYear, char ** maxName, size_t * maxRides) {
     if(destiny == NULL)
         return;
     getMostPopularRec(destiny->nextLeft, startYear, endYear, maxName, maxRides);
