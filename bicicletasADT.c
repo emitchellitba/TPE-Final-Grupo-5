@@ -289,7 +289,8 @@ static
 void freeDestinies(tDestiny * destiny){
     if(destiny == NULL)
         return;
-    freeDestinies(destiny->next);
+    freeDestinies(destiny->nextLeft);
+    freeDestinies(destiny->nextRight);
     freeRides(destiny->rides);
     free(destiny->name);
     free(destiny);
@@ -377,6 +378,18 @@ size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){
     return (startYear == 0 || ride->start_date.tm_year >= startYear) + getRidesBetween(ride->next, startYear, endYear);
 }
 
+
+void getMostPopularRec(tDestiny * destiny, int startYear, int endYear, char ** maxName, int * maxRides) {
+    if(destiny == NULL)
+        return;
+    getMostPopularRec(destiny->nextLeft, startYear, endYear, maxName, maxRides);
+    getMostPopularRec(destiny->nextRight, startYear, endYear, maxName, maxRides);
+    size_t rides =  getRidesBetween(destiny->rides, startYear, endYear);
+    if(rides > *maxRides || (rides == *maxRides && strcasecmp(*maxName, destiny->name) > 0)) {
+        *maxRides = rides;
+        *maxName = destiny->name;
+    }
+}
 
 /*Se guardan en las variables de salida el nombre y cantidad de viajes del destino más popular*/
 static
