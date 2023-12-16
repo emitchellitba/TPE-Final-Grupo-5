@@ -262,11 +262,11 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         station->casualRides++;
     
     /* Para el query 2, registramos que dia de la semana se inicio y termino el viaje */
-    mktime(&start_date);
+    start_date.tm_wday = dateToDayOfWeek(start_date.tm_year, start_date.tm_mon, start_date.tm_mday);
     city->startedRidesPerDay[start_date.tm_wday]++;
-    mktime(&end_date);
+    end_date.tm_wday = dateToDayOfWeek(end_date.tm_year, end_date.tm_mon, end_date.tm_mday);
     city->endedRidesPerDay[end_date.tm_wday]++;
-
+    
     return errno;
 }
 
