@@ -123,7 +123,7 @@ int dateCompare(struct tm d1, struct tm d2){
 /* Recibe dos punteros a estacion y compara sus id's. Retorna un numero positivo si el primero
 es mayor, negativo si es menor y 0 si son iguales */
 int compareID(const void * station1, const void * station2) {
-    return ((tStation*)station1)->id - ((tStation*)station2)->id;
+    return (*((tStation**)station1))->id - (*((tStation**)station2))->id;
 }
 
 /* Busca una estacion segun su id en un vector de estaciones con busqueda binaria. 
@@ -326,8 +326,8 @@ tData next(cityADT city) {
 static
 int compareTotalRides(const void * station1, const void * station2){
     size_t total1, total2;
-    if((total1 = ((tStation*)station1)->casualRides + ((tStation*)station1)->memberRides) == (total2 = ((tStation*)station2)->casualRides + ((tStation*)station2)->memberRides)){
-        return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name);
+    if((total1 = (*((tStation**)station1))->casualRides + (*((tStation**)station1))->memberRides) == (total2 = (*((tStation**)station2))->casualRides + (*((tStation**)station2))->memberRides)){
+        return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name);
     }
     return total1 - total2;
 }
@@ -341,7 +341,7 @@ void orderByRides(cityADT city){
 
 static
 int compareAlph(const void * station1, const void * station2){
-    return strcasecmp(((tStation*)station1)->name, ((tStation*)station2)->name); 
+    return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name); 
 }
 
 void orderByAlph(cityADT city){
