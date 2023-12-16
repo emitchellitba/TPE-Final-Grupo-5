@@ -107,7 +107,7 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
-    if((status = query1(city)) != OK || (status = query2(city)) != OK || (status = query3(city)) != OK || (status = query4(city, startYear, endYear)) != OK) {
+    if((status = query1(city)) != OK || (status = query2(city)) != OK || (status = query3(city)) != OK || (status = query4(city, startYear, endYear)) != OK || (status = query5(city, startYear, endYear)) != OK) {
         freeCity(city);
         return status;
     }
