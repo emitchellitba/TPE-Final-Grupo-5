@@ -32,7 +32,8 @@ typedef struct destiny {
     char * name;
     size_t id;
     tRide * rides;
-    struct destiny * next;
+    struct destiny * nextRight;
+    struct destiny * nextLeft;
 } tDestiny;
 
 typedef struct station{
@@ -151,7 +152,7 @@ size_t searchId(tStation ** stations, size_t stationCount, size_t id){
 
 /* Si no esta, lo agrego y me guardo esa direc; si lo encuentro, me guardo la direc de donde lo encuentro */
 tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny ** destinyOut){
-    if(destiny == NULL || destiny->id > id){
+    if(destiny == NULL){
         tDestiny * new = malloc(sizeof(tDestiny));
         if(new == NULL || errno == ENOMEM)
             return destiny;
@@ -163,7 +164,8 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
         }
         strcpy(new->name, endName);
         new->rides = NULL;
-        new->next = destiny;
+        new->nextRight = NULL;
+        new->nextLeft = NULL;
         *destinyOut = new;
         return new;
     }
@@ -171,8 +173,13 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
         *destinyOut = destiny;
         return destiny;
     }
-    destiny->next = checkDestiny(destiny->next, id, endName, destinyOut);
+    if(destiny->id < id){
+        destiny->next = checkDestiny(destiny->nextRight, id, endName, destinyOut);
+        return destiny;
+    }
+    destiny->next = checkDestiny(destiny->nextLeft, id, endName, destinyOut);
     return destiny;
+
 }
 
 /* Cambia en station el oldestDestinyName por name y oldestDate por date */
