@@ -67,9 +67,9 @@ int addStation(cityADT city, char * name, size_t id){
     for(i = 0; i < city->stationCount && !found; i++){
         if(city->stations[i]->id == id)
             found = 1;
-        /* Si se encuentra que el vector de estaciones esta desordenado o se va a desordenar al agregar
+        /* Si se encuentra que el vector de estaciones esta desordenado en funcion de sus ids o se va a desordenar al agregar
         la estacion nueva, notifica que el vector esta desordenado */
-        if(city->stations[i]->id > id || (i >= 1 && city->stations[i-1]->id > city->stations[i]->id))
+        if(orderFlag != noOrder && (city->stations[i]->id > id || (i >= 1 && city->stations[i-1]->id > city->stations[i]->id)))
             orderFlag = noOrder;
     }
 
@@ -99,8 +99,7 @@ int addStation(cityADT city, char * name, size_t id){
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
-        if(orderFlag != idOrder)
-            city->order = noOrder; // Si ya estaba desordenado, no tiene porque hacer esta asignacion
+        city->order = orderFlag;
     }
     return !found;
 }
@@ -468,5 +467,4 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         *second = top2;
         *third = top3;
     }
-
 }
