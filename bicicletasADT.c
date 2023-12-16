@@ -174,10 +174,10 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
         return destiny;
     }
     if(destiny->id < id){
-        destiny->next = checkDestiny(destiny->nextRight, id, endName, destinyOut);
+        destiny->nextRight = checkDestiny(destiny->nextRight, id, endName, destinyOut);
         return destiny;
     }
-    destiny->next = checkDestiny(destiny->nextLeft, id, endName, destinyOut);
+    destiny->nextLeft = checkDestiny(destiny->nextLeft, id, endName, destinyOut);
     return destiny;
 
 }
