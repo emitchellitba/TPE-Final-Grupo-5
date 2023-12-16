@@ -13,12 +13,13 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 #define MAX_TOKENS 150
 #define SIZE_NUM 10
 #define END_OF_TOKEN ";"
+#define END_OF_LINE "\n"
 #define SIZE_DATE 18
 #define MONTHS 12
 #define FIRST_LINE_BIKES_NYC "started_at;start_station_id;ended_at;end_station_id;rideable_type;member_casual\n"
-#define FIRST_LINE_STATIONS_NYC "station_name;latitude;longitude;id\n"
+#define FIRST_LINE_STATIONS_NYC "station_name;latitude;longitude;id\r\n"
 #define FIRST_LINE_BIKES_MON "start_date;emplacement_pk_start;end_date;emplacement_pk_end;is_member\n"
-#define FIRST_LINE_STATIONS_MON "pk;name;latitude;longitude\n"
+#define FIRST_LINE_STATIONS_MON "pk;name;latitude;longitude\r\n"
 
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
@@ -104,12 +105,12 @@ void getStation(char * aux, char ** name, unsigned long * stationId) {
         *name = strtok(aux, END_OF_TOKEN);
         for (int i = 0; i < 2; i++)
             strtok(NULL, END_OF_TOKEN);                  //ignoramos la longitud y la latitud
-        *stationId = atoi(strtok(NULL, "\n"));
+        *stationId = atoi(strtok(NULL, END_OF_LINE));
     #endif
     
     #ifdef MON
-        *stationId = atoi(strtok(aux, ";"));
-        *name = strtok(NULL, ";");
+        *stationId = atoi(strtok(aux, END_OF_TOKEN));
+        *name = strtok(NULL, END_OF_TOKEN);
     #endif
 
 }
