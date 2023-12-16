@@ -365,7 +365,7 @@ size_t getEndedRides(cityADT city, int index) {
 /*Recibe una lista con los viajes entre una estacion y un destino y retorna la cantidad de viajes entre startYear y endYear*/
 static
 size_t getRidesBetween(tRide * ride, size_t startYear, size_t endYear){ 
-    if(ride == NULL || ride->start_date.tm_year > endYear){
+    if(ride == NULL || (endYear != 0 && ride->start_date.tm_year > endYear)){
         return 0;
     }
     return (startYear == 0 || (ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))
@@ -418,13 +418,13 @@ tMostPopular nextMostPopular(cityADT city, int startYear, int endYear){
 static 
 int getCircularRidesBetween(tRide * ride, int month, int startYear, int endYear){
 
-    if(ride == NULL || ride->start_date.tm_year > endYear || (ride->start_date.tm_year == endYear && ride->start_date.tm_mon > month))
+    if(ride == NULL || (endYear != 0 && ride->start_date.tm_year > endYear) || (ride->start_date.tm_year == endYear && ride->start_date.tm_mon > month))
         return 0;
 
     // se suma 1 si el año esta entre endYear y StartYear y si el mes es igual al mes de inicio y final.
     return getCircularRidesBetween(ride->next, month, startYear, endYear) +
-           (ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month && (startYear == 0 || ((ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear))))
-           );
+           (ride->start_date.tm_mon == ride->end_date.tm_mon && ride->start_date.tm_mon == month && 
+           (startYear == 0 || ((ride->start_date.tm_year >= startYear && (endYear == 0 || ride->start_date.tm_year <= endYear)))));
 
 }
 

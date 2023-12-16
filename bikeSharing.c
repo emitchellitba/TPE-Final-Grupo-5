@@ -340,7 +340,7 @@ int query5(cityADT city, int startYear, int endYear){
     char * first, *second, *third;
         for (int j = 0; j < MONTHS; ++j) {
             getTop3ByMonth(city, j, &first, &second, &third, startYear, endYear);
-            fprintf(file, "%s;%s;%s;%s", months[j], first, second, third);
+            fprintf(file, "%s;%s;%s;%s\n", months[j], first, second, third);
             addHTMLRow(table, months[j], first, second, third);
         }
     closeHTMLTable(table);
