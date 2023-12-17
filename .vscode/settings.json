@@ -4,6 +4,7 @@
         "string.h": "c",
         "stdio.h": "c",
         "bicicletasadt.h": "c",
-        "htmltable.h": "c"
+        "htmltable.h": "c",
+        "bikesharingadt.h": "c"
     }
 }

@@ -1,4 +1,4 @@
-#include "bicicletasADT.h"
+#include "bikeSharingADT.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -38,8 +38,8 @@ void readDate(char * s, struct tm * date);
 int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
-int query4(cityADT city, int startYear, int endYear);
-int query5(cityADT city, int startYear, int endYear);
+int query4(cityADT city);
+int query5(cityADT city);
 void getStation(char * aux, char ** name, unsigned long * stationId);
 void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, struct tm * endDate, unsigned long * endStationId, int * isMember);
 
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]){
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
-    /*cheuqeamos la cantidad de parametros*/
+    /* Chequeamos la cantidad de parametros*/
     if(argc < 3 || argc > 5) {
         fprintf(stderr, "Invalid amount of arguments");
         return CANT_ARG_ERROR;
@@ -68,6 +68,7 @@ int main(int argc, char * argv[]){
 
     FILE * bikesCsv = fopen(bikes, "r");
     FILE * stationsCsv = fopen(stations, "r");
+
     /* Se chequea que los parametros sean los esperados */
     if((status = checkParams(bikesCsv, stationsCsv, startYear, endYear)) != OK) {
         if(status == INVALID_ARG) {
@@ -85,7 +86,32 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
-    /*ciclo para guardar las estaciones*/
+    /*Se guardan las estaciones*/
+    if((status = saveStations(city, stationsCsv)) == NO_MEMORY){
+        return status;
+    }
+
+    /*Se guardan los viajes*/
+    if((status = saveRides(city, bikesCsv, startYear, endYear)) == NO_MEMORY){
+        return status;
+    }
+
+    fclose(bikesCsv);
+    fclose(stationsCsv);
+
+    /*Aca se invocan las queries, y tambien se verifica que todas hayan funcionado; sino se libera la ciudad y retorna status*/
+    if((status = query1(city)) != OK || (status = query2(city)) != OK || (status = query3(city)) != OK || 
+        (status = query4(city)) != OK || (status = query5(city)) != OK) {
+        freeCity(city);
+        return status;
+    }
+    
+    freeCity(city);
+    return status;
+}
+
+/* Ciclo para guardar las estaciones */
+int saveStations(cityADT city, FILE * stationsCsv){
     char aux[MAX_TOKENS];
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
@@ -96,8 +122,12 @@ int main(int argc, char * argv[]){
             return NO_MEMORY;
         }
     }
+    return OK;
+}
 
-    /*ciclo para guardar los viajes*/
+/* Ciclo para guardar los viajes */
+int saveRides(cityADT city, FILE * bikesCsv, int startYear, int endYear){
+    char aux[MAX_TOKENS];
     unsigned long startStationId, endStationId;
     struct tm startDate, endDate;
     int isMember;
@@ -108,18 +138,7 @@ int main(int argc, char * argv[]){
             return NO_MEMORY;
         }
     }
-
-    fclose(bikesCsv);
-    fclose(stationsCsv);
-
-    /*Aca se invocan las queries, y tambien se verifica que todas hayan funcionado; sino se libera la ciudad y retorna status*/
-    if((status = query1(city)) != OK || (status = query2(city)) != OK || (status = query3(city)) != OK || (status = query4(city, startYear, endYear)) != OK || (status = query5(city, startYear, endYear)) != OK) {
-        freeCity(city);
-        return status;
-    }
-    
-    freeCity(city);
-    return status;
+    return OK;
 }
 
 /*Lee la estacion, recopilando unicamente los datos relevantes*/
@@ -158,7 +177,7 @@ void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, 
     #endif
 }
 
-/*Se cheuque que los parametros fueron ingresados correctamente*/
+/*Se chequea que los parametros fueron ingresados correctamente*/
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
     char aux[MAX_TOKENS];
 
@@ -288,7 +307,7 @@ int query3(cityADT city) {
     return OK;
 }
 
-int query4(cityADT city, int startYear, int endYear){
+int query4(cityADT city){
 
     FILE * file = fopen("query4.csv", "w+");
 
@@ -324,7 +343,7 @@ int query4(cityADT city, int startYear, int endYear){
     return OK;
 }
 
-int query5(cityADT city, int startYear, int endYear){
+int query5(cityADT city){
 
     char * months[12] = {"January", "February", "March", "April", "May", "June",
                          "July", "August", "September", "October", "November", "December"};
