@@ -54,17 +54,16 @@ typedef struct cityCDT{
 
 
 cityADT newCity(void){
-    return calloc(1, sizeof(cityCDT)); //si retorna NULL, es porque dio error el calloc.
+    return calloc(1, sizeof(cityCDT));          //si retorna NULL, es porque dio error el calloc.
 }
 
 
 int addStation(cityADT city, char * name, size_t id){
     errno = 0;
-    /* Primero nos fijamos que no exista, recorriendo el vector */
     bool orderFlag = idOrder;
     bool found = 0;
-    size_t i;
-    for(i = 0; i < city->stationCount && !found; i++){
+    /* Primero nos fijamos que no exista, recorriendo el vector */
+    for(size_t i = 0; i < city->stationCount && !found; i++){
         if(city->stations[i]->id == id)
             found = 1;
         /* Si se encuentra que el vector de estaciones esta desordenado en funcion de sus ids o se va a desordenar al agregar
@@ -93,15 +92,13 @@ int addStation(cityADT city, char * name, size_t id){
         strcpy(city->stations[city->stationCount]->name, name);
         city->stations[city->stationCount]->id = id;
         city->stations[city->stationCount]->destinies = NULL;
-        city->stations[city->stationCount]->memberRides = city->stations[i]->casualRides = 0;
+        city->stations[city->stationCount]->memberRides = city->stations[city->stationCount]->casualRides = 0;
         city->stations[city->stationCount]->oldestDestinyName = city->stations[city->stationCount]->mostPopName = NULL;
         for(int m = 0; m < MONTHS; m++){
             city->stations[city->stationCount]->monthlyCircularRides[m] = 0;
         }
         city->stationCount++;
-        //si se crea una nueva estacion, se apaga el flag de ordered
-        //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
-        city->order = orderFlag;
+        city->order = orderFlag;        // noOrder si las estaciones no se agregaron ordenadas en funcion de sus ids
     }
     return 0;
 }
@@ -151,7 +148,9 @@ size_t searchId(tStation ** stations, size_t stationCount, size_t id){
     return NOT_FOUND;
 }
 
-/* Si no esta, lo agrego y me guardo esa direc; si lo encuentro, me guardo la direc de donde lo encuentro */
+/* Recorro el arbol binario de destinos, comparando con el id del destino del nuevo viaje. 
+Si no esta, lo agrego y me guardo su direccion de memoria en el parametro de salida destinyOut. 
+Si lo encuentro, me guardo la direccion de memoria de donde lo encuentro */
 tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny ** destinyOut){
     if(destiny == NULL){
         tDestiny * new = malloc(sizeof(tDestiny));
@@ -180,7 +179,6 @@ tDestiny * checkDestiny(tDestiny * destiny, size_t id, char * endName, tDestiny 
     }
     destiny->nextLeft = checkDestiny(destiny->nextLeft, id, endName, destinyOut);
     return destiny;
-
 }
 
 /* Cambia en station el oldestDestinyName por name y oldestDate por date */
@@ -195,6 +193,7 @@ void changeOldest(tStation * station, char * name, struct tm date){
     station->oldest_date = date;
 }
 
+/* Cambia en station el mostPopName por name y mostPopRides por rides */
 static
 void changeMostPop(tStation * station, char * name, size_t rides){
     char * aux = realloc(station->mostPopName, strlen(name) + 1);
@@ -216,7 +215,7 @@ int dateToDayOfWeek(int year, int month, int day) {
 
 int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm end_date, size_t endStationId, int isMember, int startYear, int endYear){
     errno = 0;
-    /*Si el vector no está ordenado, lo ordenamos*/
+    /*Si el vector no esta ordenado por id, lo ordenamos*/
     if(city->order != idOrder) {
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareID);
         city->order = idOrder;
@@ -226,46 +225,50 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
     size_t startIdx, endIdx;
     tStation * station;
     char * endName;
-    
     if((startIdx = searchId(city->stations, city->stationCount, startStationId)) == NOT_FOUND){
         return 0;
     }
     if((endIdx = searchId(city->stations, city->stationCount, endStationId)) == NOT_FOUND){
         return 0;
     }
-
     station = city->stations[startIdx];
     endName = city->stations[endIdx]->name; 
 
+    /* Si el viaje no es circular, entra */
     if(startStationId != endStationId){
         tDestiny * destiny;
         station->destinies = checkDestiny(station->destinies, endStationId, endName, &destiny);
         CHECK_ERRNO;
+        /* Si el viaje esta dentro del rango de años de startYear y endYear, suma en el conteo de viajes del destino */
         if(DATE_RANGE){
             destiny->rideCount++;
         }
 
-        /* Nos guardamos el viaje mas viejo (no circular) para el query 3
-        Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
+        /* Comparo el viaje con el mas viejo registrado (a menos que sea el primero) y si es anterior lo reemplazo */
         if((station->memberRides + station->casualRides) == 0 || dateCompare(start_date, station->oldest_date) < 0){
             changeOldest(station, endName, start_date);
             CHECK_ERRNO;
         }
+        /* Comparo la cantidad de viajes del destino actual con el los del mas popular registrado
+        (a menos que sea el primero) y si es mayor lo cambio */
         if((station->memberRides + station->casualRides) == 0 || destiny->rideCount > station->mostPopRides){
             changeMostPop(station, endName, destiny->rideCount);
             CHECK_ERRNO;
         }
-    }else if(DATE_RANGE && start_date.tm_mon == end_date.tm_mon){
+    }
+    /* Si es un viaje circular dentro del rengo de años y con el mismo mes de inicio y se fin, se suma uno a la cantidad
+    de viajes circulares de la estacion en ese mes */
+    else if(DATE_RANGE && start_date.tm_mon == end_date.tm_mon){
         station->monthlyCircularRides[start_date.tm_mon]++;
     }
 
-    /* Separamos la suma de viajes totales segun miembro o no para el query 1 y sumamos adecuadamente */
+    /* Separamos la suma de viajes totales segun miembro o no y sumamos adecuadamente */
     if(isMember)
         station->memberRides++;
     else
         station->casualRides++;
     
-    /* Para el query 2, registramos que dia de la semana se inicio y termino el viaje */
+    /* Registramos que dia de la semana se inicio y termino el viaje */
     start_date.tm_wday = dateToDayOfWeek(start_date.tm_year, start_date.tm_mon, start_date.tm_mday);
     city->startedRidesPerDay[start_date.tm_wday]++;
     end_date.tm_wday = dateToDayOfWeek(end_date.tm_year, end_date.tm_mon, end_date.tm_mday);
@@ -298,7 +301,7 @@ void freeCity(cityADT city){
     free(city);
 }
 
-// Funciones de iteracion
+
 void toBegin(cityADT city) {
     city->iter = 0;
 }
@@ -332,7 +335,9 @@ tOldest nextOldest(cityADT city) {
 }
 
 
-
+/* Funcion de comparacion que retorna un numero negativo si la station1 tiene mas viajes que la station2 y un numero
+positivo si tiene menos. Si son iguales en cantidad de viajes, retorna un numero negativo si la primera es alfabeticamente
+menor, positivo si es mayor y cero si son iguales*/
 static
 int compareTotalRides(const void * station1, const void * station2){
     size_t total1, total2;
@@ -343,18 +348,22 @@ int compareTotalRides(const void * station1, const void * station2){
 }
 
 void orderByRides(cityADT city){
+    /* Si ya estaba ordenada segun el criterio, no hace nada */
     if(city->order != ridesOrder){    
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareTotalRides);
         city->order = ridesOrder;
     }
 }
 
+/* Funcion de comparacion que retorna un numero negativo si la primera es alfabeticamente menor, positivo si es mayor y 
+cero si son iguales */
 static
 int compareAlph(const void * station1, const void * station2){
     return strcasecmp((*((tStation**)station1))->name, (*((tStation**)station2))->name); 
 }
 
 void orderByAlph(cityADT city){
+    /* Si ya estaba ordenada segun el criterio, no hace nada */
     if(city->order != alphOrder){
         qsort(city->stations, city->stationCount, sizeof(tStation *), compareAlph);
         city->order = alphOrder;
@@ -388,10 +397,13 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     size_t cantTop1 = 0, cantTop2 = 0, cantTop3 = 0;
     char * top1, *top2, *top3;
 
+    /* Recorre las estaciones obteniendo la cantidad de viajes circulares en el mes indicado y las va comparando
+    con las registradas para armar el top 3 */
     for (int i = 0; i < city->stationCount; ++i) {
         size_t cantAux = city->stations[i]->monthlyCircularRides[month];
         char * aux = city->stations[i]->name;
 
+        /* Si hay viajes circulares en ese mes, entra */
         if(cantAux > 0){
             if(cantAux > cantTop1 || (cantAux == cantTop1 && strcasecmp(top1, aux) > 0)){
                 cantTop3 = cantTop2;
@@ -412,11 +424,14 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
         }
 
     }
+    /* Si alguna de las tres quedo con 0 viajes, retorna Empty en las tres posiciones */
     if(cantTop1 == 0 || cantTop2 == 0 || cantTop3 == 0){
         *first = "Empty";
         *second = "Empty";
         *third = "Empty";
-    }else{
+    }
+    /* Si no, guarda los nombres del top 3 */
+    else{
         *first = top1;
         *second = top2;
         *third = top3;

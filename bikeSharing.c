@@ -79,6 +79,9 @@ int main(int argc, char * argv[]){
     }
 
     cityADT city = newCity();
+    if(city == NULL){
+        return NO_MEMORY;
+    }
 
 
     char aux[MAX_TOKENS];
