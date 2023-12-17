@@ -16,13 +16,14 @@
 
 enum orderedBy {noOrder = 0, idOrder, ridesOrder, alphOrder};
 
-/* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones (en orden de agregado). Dentro de cada una se almacena
-información útil para los queries y un vector dinámico de los destinos de los viajes iniciado en esa estación (tambien en orden de agregado).
-Dentro de los vectores de destinos, se almacena su nombre y un puntero al primer elemento de una lista de los viajes realizados entre esas 
-dos estaciones, en orden cronológico. Decidimos separar por destino ya que nos facilitaba buscar el destino mas popular (query 4). 
-De los vectores dinámicos, nos vamos guardando su dimension para poder recorrerlos. 
-Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico o cantidad de viajes), decidimos guardarlos por orden
-de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
+/* Nuestro TAD consiste en un vector dinamico donde se almacenan las estaciones. Dentro de cada una se almacena informacion relevante
+para los queries. Particularmente, para la query 5 se tiene un vector estatico de MONTHS = 12 espacios donde se guardan la cantidad
+de viajes circulares mensuales por estacion dentro del rango de años especificado. Ademas, para la query 4 se tiene un arbol binario
+(no balanceado) con los destinos; en cada uno se guarda su nombre, su id y la cantidad de viajes hacia el desde la estacion original
+en el rango de años indicado. 
+    El vector de estaciones se almacena desordenado, pero hay funciones para ordenarlo de distintas maneras. Por ello, se tiene un flag
+order para indicar el tipo de orden actual.
+*/
 
 typedef struct destiny {
     char * name;
@@ -102,7 +103,7 @@ int addStation(cityADT city, char * name, size_t id){
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
         city->order = orderFlag;
     }
-    return !found;
+    return 0;
 }
 
 

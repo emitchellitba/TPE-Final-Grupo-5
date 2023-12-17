@@ -232,12 +232,12 @@ int query2(cityADT city){
     while(hasNext(city)){
         tOldest oldest = nextOldest(city);
         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
-        if(oldest.oldestDestinyName != NULL){
-            fprintf(file, "%s;%s;%d/%02d/%02d %02d:%02d\n", oldest.name, oldest.oldestDestinyName, oldest.oldest_date.tm_mday, rides.oldest_date.tm_mon,
-                    oldest.oldest_date.tm_year, oldest.oldest_date.tm_hour, oldest.oldest_date.tm_min);
-            sprintf(datestr, "%d/%02d/%02d %02d:%02d", oldest.oldest_date.tm_mday, oldest.oldest_date.tm_mon, oldest.oldest_date.tm_year,
-                    oldest.oldest_date.tm_hour, oldest.oldest_date.tm_min);
-            addHTMLRow(table, oldest.name, oldest.oldestDestinyName, datestr);
+        if(oldest.destinyName != NULL){
+            fprintf(file, "%s;%s;%d/%02d/%02d %02d:%02d\n", oldest.name, oldest.destinyName, oldest.date.tm_mday, oldest.date.tm_mon,
+                    oldest.date.tm_year, oldest.date.tm_hour, oldest.date.tm_min);
+            sprintf(datestr, "%d/%02d/%02d %02d:%02d", oldest.date.tm_mday, oldest.date.tm_mon, oldest.date.tm_year,
+                    oldest.date.tm_hour, oldest.date.tm_min);
+            addHTMLRow(table, oldest.name, oldest.destinyName, datestr);
         }
     }
     closeHTMLTable(table);
@@ -348,5 +348,3 @@ int query5(cityADT city, int startYear, int endYear){
     return OK;
 
 }
-
-

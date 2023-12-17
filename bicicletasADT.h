@@ -6,6 +6,7 @@
 #define DAYS_OF_WEEK 7
 #define MONTHS 12
 
+/* Estructuras para obtener la informacion necesaria al iterar */
 typedef struct{
     char * name;
     size_t memberRides, casualRides;
@@ -28,10 +29,11 @@ typedef struct cityCDT * cityADT;
 /* Reserva el espacio para una nueva ciudad, sin estaciones ni viajes */
 cityADT newCity(void);
 
-/* Agrega una estacion con los datos dados, vacia en viajes. Devuelve 1 si agrega, 0 si no */                         
+/* Agrega una estacion con los datos dados, vacia.  */                         
 int addStation(cityADT city, char * name, size_t id);
 
-/* Agrega un viaje con los datos dados. Si las estaciones de incio o fin no existen, se ignora el viaje */
+/* Agrega un viaje desde la estacion de id = startStationId a la estacion de id = endStationId con los datos dados. 
+Si las estaciones de incio o fin no existen, se ignora el viaje. */
 int addRide(cityADT city, size_t startStationId, struct tm startDate, struct tm endDate, size_t endStationId, int isMember, int startYear, int endYear);
 
 /* Se libera la memoria reservada */
