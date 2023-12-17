@@ -378,7 +378,6 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     char * top1, *top2, *top3;
 
     for (int i = 0; i < city->stationCount; ++i) {
-        printf("monthly: %ld\n", city->stations[i]->monthlyCircularRides[month]);
         size_t cantAux = city->stations[i]->monthlyCircularRides[month];
         char * aux = city->stations[i]->name;
 
