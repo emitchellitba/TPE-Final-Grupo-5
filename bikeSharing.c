@@ -35,13 +35,15 @@ enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CAN
 
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear);
 void readDate(char * s, struct tm * date);
+int saveStations(cityADT city, FILE * stationsCsv);
+int saveRides(cityADT city, FILE * bikesCsv, int startYear, int endYear);
+void getStation(char * aux, char ** name, unsigned long * stationId);
+void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, struct tm * endDate, unsigned long * endStationId, int * isMember);
 int query1(cityADT city);
 int query2(cityADT city);
 int query3(cityADT city);
 int query4(cityADT city);
 int query5(cityADT city);
-void getStation(char * aux, char ** name, unsigned long * stationId);
-void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, struct tm * endDate, unsigned long * endStationId, int * isMember);
 
 int main(int argc, char * argv[]){
     errno = 0;
