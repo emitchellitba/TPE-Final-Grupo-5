@@ -7,6 +7,7 @@
 #include "cTable/htmlTable.h"
 #include <stdbool.h>
 
+/*enums para mejorar la lectura de los errores y los argumentos*/
 enum arguments {BIKES_FILES = 1, STATIONS_FILES, START_YEAR, END_YEAR};
 enum status {OK = 0, CANT_ARG_ERROR, FILE_NOT_FOUND, INVALID_ARG, NO_MEMORY, CANT_CREATE_FILE, CANT_CREATE_TABLE, ITER_ERROR};
 
@@ -50,6 +51,7 @@ int main(int argc, char * argv[]){
     int startYear = 0, endYear = 0;
     char* bikes, *stations;
 
+    /*cheuqeamos la cantidad de parametros*/
     if(argc < 3 || argc > 5) {
         fprintf(stderr, "Invalid amount of arguments");
         return CANT_ARG_ERROR;
@@ -83,7 +85,7 @@ int main(int argc, char * argv[]){
         return NO_MEMORY;
     }
 
-
+    /*ciclo para guardar las estaciones*/
     char aux[MAX_TOKENS];
     while(fgets(aux, MAX_TOKENS, stationsCsv) != NULL) {
         char * name;
@@ -95,6 +97,7 @@ int main(int argc, char * argv[]){
         }
     }
 
+    /*ciclo para guardar los viajes*/
     unsigned long startStationId, endStationId;
     struct tm startDate, endDate;
     int isMember;
@@ -109,6 +112,7 @@ int main(int argc, char * argv[]){
     fclose(bikesCsv);
     fclose(stationsCsv);
 
+    /*Aca se invocan las queries, y tambien se verifica que todas hayan funcionado; sino se libera la ciudad y retorna status*/
     if((status = query1(city)) != OK || (status = query2(city)) != OK || (status = query3(city)) != OK || (status = query4(city, startYear, endYear)) != OK || (status = query5(city, startYear, endYear)) != OK) {
         freeCity(city);
         return status;
@@ -118,6 +122,7 @@ int main(int argc, char * argv[]){
     return status;
 }
 
+/*Lee la estacion, recopilando unicamente los datos relevantes*/
 void getStation(char * aux, char ** name, unsigned long * stationId) {
     #ifdef NYC
         *name = strtok(aux, END_OF_TOKEN);
@@ -133,6 +138,7 @@ void getStation(char * aux, char ** name, unsigned long * stationId) {
 
 }
 
+/*Idem para viajes*/
 void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, struct tm * endDate, unsigned long * endStationId, int * isMember) {
     #ifdef NYC
         readDate(strtok(aux, END_OF_TOKEN), startDate);
@@ -152,7 +158,7 @@ void getRide(char * aux, unsigned long * startStationId, struct tm * startDate, 
     #endif
 }
 
-
+/*Se cheuque que los parametros fueron ingresados correctamente*/
 int checkParams(FILE* bikes, FILE*stations, int startYear, int endYear){
     char aux[MAX_TOKENS];
 
@@ -191,7 +197,7 @@ int query1(cityADT city){
         perror("Error. Cant create file 'query1.html'");
         return CANT_CREATE_TABLE;
     }
-
+    /*Se copia a mano la primera linea siguiendo la estructura del archivo. Esto se sigue para el resto de las queries*/
     fprintf(file, "bikeStation;memberTrips;casualTrips;allTrips\n");
     char memstr[SIZE_NUM], casstr[SIZE_NUM], allnum[SIZE_NUM];
 
