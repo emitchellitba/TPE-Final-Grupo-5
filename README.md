@@ -12,9 +12,7 @@
 y bikeSharingMON). 
 
 ## EJECUCION
-    Luego, para la ejecucion de los mismos se deben pasar obligariamente en este ordem los archivos bikesCITY.csv y stationsCITY.csv
-(reemplazando CITY por la terminacion correspondiente, NYC o MON). Despues de estos, se puede elegir pasar un limite de años entre
-los cuales se analizará la Query 4 (puede ser ninguno, solo el de inicio o el de inicio y fin). 
+    Luego, para la ejecucion de los mismos se deben pasar los archivos de bicicletas y de estaciones, en ese orden. Despues de estos, se puede elegir pasar un limite de años entre los cuales se analizaran las queries 4 y 5 (puede ser ninguno, solo el de inicio o el de inicio y fin). 
 
 Ejemplo de ejecucion para MONTREAL:
 ./bikeSharingMON bikesMON.csv stationsMON.csv 2000
