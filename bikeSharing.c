@@ -195,12 +195,12 @@ int query1(cityADT city){
     orderByRides(city);
     toBegin(city);
     while(hasNext (city)){
-        tData data = next(city);
-        fprintf(file, "%s;%ld;%ld;%ld\n", data.name, data.memberRides, data.casualRides, data.memberRides + data.casualRides);
-        sprintf(memstr, "%ld", data.memberRides);
-        sprintf(casstr, "%ld", data.casualRides);
-        sprintf(allnum, "%ld", data.memberRides + data.casualRides);
-        addHTMLRow(table, data.name, memstr, casstr, allnum);
+        tTotalRides rides = nextTotalRides(city);
+        fprintf(file, "%s;%ld;%ld;%ld\n", rides.name, rides.memberRides, rides.casualRides, rides.memberRides + rides.casualRides);
+        sprintf(memstr, "%ld", rides.memberRides);
+        sprintf(casstr, "%ld", rides.casualRides);
+        sprintf(allnum, "%ld", rides.memberRides + rides.casualRides);
+        addHTMLRow(table, rides.name, memstr, casstr, allnum);
     }
     closeHTMLTable(table);
     fclose(file);
@@ -230,14 +230,14 @@ int query2(cityADT city){
     orderByAlph(city);
     toBegin(city);
     while(hasNext(city)){
-        tData data = next(city);
+        tOldest oldest = nextOldest(city);
         /* Solo se imprime si la estacion tiene viajes que no sean circulares */
-        if(data.oldestDestinyName != NULL){
-            fprintf(file, "%s;%s;%d/%02d/%02d %02d:%02d\n", data.name, data.oldestDestinyName, data.oldest_date.tm_mday, data.oldest_date.tm_mon,
-                    data.oldest_date.tm_year, data.oldest_date.tm_hour, data.oldest_date.tm_min);
-            sprintf(datestr, "%d/%02d/%02d %02d:%02d", data.oldest_date.tm_mday, data.oldest_date.tm_mon, data.oldest_date.tm_year,
-                    data.oldest_date.tm_hour, data.oldest_date.tm_min);
-            addHTMLRow(table, data.name, data.oldestDestinyName, datestr);
+        if(oldest.oldestDestinyName != NULL){
+            fprintf(file, "%s;%s;%d/%02d/%02d %02d:%02d\n", oldest.name, oldest.oldestDestinyName, oldest.oldest_date.tm_mday, rides.oldest_date.tm_mon,
+                    oldest.oldest_date.tm_year, oldest.oldest_date.tm_hour, oldest.oldest_date.tm_min);
+            sprintf(datestr, "%d/%02d/%02d %02d:%02d", oldest.oldest_date.tm_mday, oldest.oldest_date.tm_mon, oldest.oldest_date.tm_year,
+                    oldest.oldest_date.tm_hour, oldest.oldest_date.tm_min);
+            addHTMLRow(table, oldest.name, oldest.oldestDestinyName, datestr);
         }
     }
     closeHTMLTable(table);

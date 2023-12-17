@@ -24,7 +24,6 @@ De los vectores dinámicos, nos vamos guardando su dimension para poder recorrer
 Como algunos queries nos solicitaban un orden y otros otro (ej. orden alfabetico o cantidad de viajes), decidimos guardarlos por orden
 de agregado y hacer las funciones que nos devuelvan los indices ordenados segun el criterio */
 
-
 typedef struct destiny {
     char * name;
     size_t id;
@@ -307,19 +306,30 @@ int hasNext(cityADT city) {
     return city->iter < city->stationCount;
 }
 
-tData next(cityADT city) {
+tTotalRides nextTotalRides(cityADT city) {
     if(!hasNext(city)) {
         exit(1);
     }
-    tData aux; 
+    tTotalRides aux; 
     aux.name = city->stations[city->iter]->name;
     aux.memberRides = city->stations[city->iter]->memberRides;
     aux.casualRides = city->stations[city->iter]->casualRides;
-    aux.oldestDestinyName = city->stations[city->iter]->oldestDestinyName;
-    aux.oldest_date = city->stations[city->iter]->oldest_date;
     city->iter++;
     return aux;
 }
+
+tOldest nextOldest(cityADT city) {
+    if(!hasNext(city)) {
+        exit(1);
+    }
+    tOldest aux; 
+    aux.name = city->stations[city->iter]->name;
+    aux.destinyName = city->stations[city->iter]->oldestDestinyName;
+    aux.date = city->stations[city->iter]->oldest_date;
+    city->iter++;
+    return aux;
+}
+
 
 
 static

@@ -9,9 +9,13 @@
 typedef struct{
     char * name;
     size_t memberRides, casualRides;
-    char * oldestDestinyName;
-    struct tm oldest_date;
-} tData;
+} tTotalRides;
+
+typedef struct{
+    char * name;
+    char * destinyName;
+    struct tm date;
+} tOldest;
 
 typedef struct{
     char * name;
@@ -37,7 +41,9 @@ void toBegin(cityADT city);
 
 int hasNext(cityADT city);
 
-tData next(cityADT city);
+tTotalRides nextTotalRides(cityADT city);
+
+tOldest nextOldest(cityADT city);
 
 void orderByRides(cityADT city);
 
