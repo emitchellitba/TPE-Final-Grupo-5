@@ -12,6 +12,7 @@
 #define BLOCK 50
 #define NOT_FOUND -1
 #define CHECK_ERRNO if(errno == ENOMEM) return errno
+#define DATE_RANGE (startYear == 0 || start_date.tm_year >= startYear) && (endYear == 0 || end_date.tm_year <= endYear)
 
 enum orderedBy {noOrder = 0, idOrder, ridesOrder, alphOrder};
 
@@ -237,7 +238,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         tDestiny * destiny;
         station->destinies = checkDestiny(station->destinies, endStationId, endName, &destiny);
         CHECK_ERRNO;
-        if(start_date.tm_year >= startYear && end_date.tm_year <= endYear){
+        if(DATE_RANGE){
             destiny->rideCount++;
         }
 
@@ -251,7 +252,7 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
             changeMostPop(station, endName, destiny->rideCount);
             CHECK_ERRNO;
         }
-    }else if(start_date.tm_year >= startYear && end_date.tm_year <= endYear && start_date.tm_mon == end_date.tm_mon){
+    }else if(DATE_RANGE && start_date.tm_mon == end_date.tm_mon){
         station->monthlyCircularRides[start_date.tm_mon]++;
     }
 
