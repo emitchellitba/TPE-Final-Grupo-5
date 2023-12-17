@@ -95,6 +95,9 @@ int addStation(cityADT city, char * name, size_t id){
         city->stations[city->stationCount]->destinies = NULL;
         city->stations[city->stationCount]->memberRides = city->stations[i]->casualRides = 0;
         city->stations[city->stationCount]->oldestDestinyName = city->stations[city->stationCount]->mostPopName = NULL;
+        for(int m = 0; m < MONTHS; m++){
+            city->stations[city->stationCount]->monthlyCircularRides[m] = 0;
+        }
         city->stationCount++;
         //si se crea una nueva estacion, se apaga el flag de ordered
         //a discutir si sumamos comparaciones para ver que el id sea menor que la ultima estacion del vector
@@ -371,11 +374,12 @@ void getTop3ByMonth(cityADT city, int month, char ** first, char ** second, char
     if(month < 0 || month > 11)
         return;
 
-    int cantTop1 = 0, cantTop2 = 0, cantTop3 = 0;
+    size_t cantTop1 = 0, cantTop2 = 0, cantTop3 = 0;
     char * top1, *top2, *top3;
 
     for (int i = 0; i < city->stationCount; ++i) {
-        int cantAux = city->stations[i]->monthlyCircularRides[month];
+        printf("monthly: %ld\n", city->stations[i]->monthlyCircularRides[month]);
+        size_t cantAux = city->stations[i]->monthlyCircularRides[month];
         char * aux = city->stations[i]->name;
 
         if(cantAux > 0){
