@@ -251,7 +251,8 @@ int addRide(cityADT city, size_t startStationId, struct tm start_date, struct tm
         }
         /* Comparo la cantidad de viajes del destino actual con el los del mas popular registrado
         (a menos que sea el primero) y si es mayor lo cambio */
-        if((station->memberRides + station->casualRides) == 0 || destiny->rideCount > station->mostPopRides){
+        if((station->memberRides + station->casualRides) == 0 || destiny->rideCount > station->mostPopRides ||
+         (destiny->rideCount == station->mostPopRides && strcmp(destiny->name, station->name) > 0)){
             changeMostPop(station, endName, destiny->rideCount);
             CHECK_ERRNO;
         }
